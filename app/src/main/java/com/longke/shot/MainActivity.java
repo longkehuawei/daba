@@ -4,6 +4,8 @@ package com.longke.shot;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -44,7 +46,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.ButterKnife;
@@ -52,6 +56,8 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 import okhttp3.OkHttpClient;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
+
+import static android.R.attr.key;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -117,6 +123,17 @@ public class MainActivity extends AppCompatActivity {
     String TrainId;
     String GroupIndex;
     String VideoStreamUrl;
+    //实例化AudioManager对象，控制声音
+    private AudioManager am =null;
+    //最大音量
+    float audioMaxVolumn;
+    //当前音量
+    float audioCurrentVolumn;
+    float volumnRatio;
+    //音效播放池
+    private SoundPool soundPool = new SoundPool(2,AudioManager.STREAM_MUSIC,0);
+    //存放音效的HashMap
+    private Map<Integer,Integer> map = new HashMap<Integer,Integer>();
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -151,6 +168,15 @@ public class MainActivity extends AppCompatActivity {
                 case 5://强制刷新
                     GetTrainStudentDataByGroupId();
                     break;
+                case 6:
+                    soundPool.play(
+                            map.get(0),//声音资源
+                            volumnRatio,//左声道
+                            volumnRatio,//右声道
+                            1,//优先级
+                            0,//循环次数，0是不循环，-1是一直循环
+                            1);//回放速度，0.5~2.0之间，1为正常速度
+                    break;
             }
         }
     };
@@ -173,17 +199,28 @@ public class MainActivity extends AppCompatActivity {
 
         // 获取屏幕的默认分辨率
         Display display = getWindowManager().getDefaultDisplay();
+        initView();
         if (display.getWidth() == 1280) {
             shotPoint.setBilu(0.6f);
         }
         System.out.println("width-display :" + display.getWidth());
         System.out.println("heigth-display :" + display.getHeight());
         mMyOkhttp = new MyOkHttp(okHttpClient);
-        initView();
+
         initData();
         initConnection();
         getData();
-        initDpi(this);
+        //实例化AudioManager对象，控制声音
+        am = (AudioManager)this.getSystemService(this.AUDIO_SERVICE);
+//最大音量
+        audioMaxVolumn = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+//当前音量
+        audioCurrentVolumn = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+        volumnRatio = audioCurrentVolumn/audioMaxVolumn;
+
+        map.put(0,soundPool.load(this,R.raw.f2,1));
+
+       // map.put(1, soundPool.load(this,R.raw.wrong,1));
         timer = new CountDownTimer(4 * 1000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -591,6 +628,9 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject object = new JSONObject(new String(message.getPayload()));
                     if (object.has("Type")) {
                         String type = object.getString("Type");
+                        if(info==null||info.getData()==null||info.getData().getStatus() != 3){
+                            return;
+                        }
                         if (type.equals("Complete")) {
 
 
@@ -770,6 +810,13 @@ public class MainActivity extends AppCompatActivity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ready_layout:
+                soundPool.play(
+                        map.get(0),//声音资源
+                        5,//左声道
+                        5,//右声道
+                        1,//优先级
+                        0,//循环次数，0是不循环，-1是一直循环
+                        1);//回放速度，0.5~2.0之间，1为正常速度
                 if (info != null && info.getData() != null) {
                     startShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
                 }
