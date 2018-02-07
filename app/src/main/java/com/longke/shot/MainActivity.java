@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
     String VideoStreamUrl;
     private MediaPlayer mMediaPlayer;
     private Vibrator vibrator;
-    private String music = "f2.mp3";
+    private String music = "avchat_ring.mp3";
     private long[] pattern = { 0, 2000, 1000 };
     //存放音效的HashMap
     private Map<Integer,Integer> map = new HashMap<Integer,Integer>();
@@ -234,8 +234,8 @@ public class MainActivity extends AppCompatActivity {
 		/*
 		 * timerVibrate=new Timer(); timerVibrate.sc
 		 */
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        vibrator.vibrate(pattern, 0);
+       /* vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        vibrator.vibrate(pattern, 0);*/
 
 		/*
 		 * Uri alert = RingtoneManager
@@ -262,24 +262,21 @@ public class MainActivity extends AppCompatActivity {
 		}*/
 
         try {
-            AssetFileDescriptor fileDescriptor = getAssets().openFd(music);
-            mMediaPlayer
-                    .setDataSource(fileDescriptor.getFileDescriptor(),
-                            fileDescriptor.getStartOffset(),
-                            fileDescriptor.getLength());
-            getSystemService(AUDIO_SERVICE);
 
-            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
-            mMediaPlayer.setLooping(true);
-            mMediaPlayer.prepare();
+            AssetFileDescriptor file = getResources().openRawResourceFd(R.raw.f2);
+            try {
+                mMediaPlayer.setDataSource(file.getFileDescriptor(), file.getStartOffset(),
+                        file.getLength());
+                mMediaPlayer.prepare();
+                file.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            getSystemService(AUDIO_SERVICE);
+            mMediaPlayer.setVolume(0.5f, 0.5f);
+           // mMediaPlayer.setLooping(true);
             mMediaPlayer.start();
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalStateException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
@@ -850,13 +847,13 @@ public class MainActivity extends AppCompatActivity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ready_layout:
-
+                playAlarm();
                 if (info != null && info.getData() != null) {
                     startShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
                 }
                 break;
             case R.id.end_layout:
-                if (info.getData() == null) {
+                if (info != null &&info.getData() == null) {
                     return;
                 }
                 endShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
