@@ -3,14 +3,17 @@ package com.longke.shot;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.content.res.Configuration;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -45,6 +48,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,8 +60,6 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 import okhttp3.OkHttpClient;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
-
-import static android.R.attr.key;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -123,15 +125,10 @@ public class MainActivity extends AppCompatActivity {
     String TrainId;
     String GroupIndex;
     String VideoStreamUrl;
-    //实例化AudioManager对象，控制声音
-    private AudioManager am =null;
-    //最大音量
-    float audioMaxVolumn;
-    //当前音量
-    float audioCurrentVolumn;
-    float volumnRatio;
-    //音效播放池
-    private SoundPool soundPool = new SoundPool(2,AudioManager.STREAM_MUSIC,0);
+    private MediaPlayer mMediaPlayer;
+    private Vibrator vibrator;
+    private String music = "f2.mp3";
+    private long[] pattern = { 0, 2000, 1000 };
     //存放音效的HashMap
     private Map<Integer,Integer> map = new HashMap<Integer,Integer>();
     private Handler handler = new Handler() {
@@ -169,13 +166,7 @@ public class MainActivity extends AppCompatActivity {
                     GetTrainStudentDataByGroupId();
                     break;
                 case 6:
-                    soundPool.play(
-                            map.get(0),//声音资源
-                            volumnRatio,//左声道
-                            volumnRatio,//右声道
-                            1,//优先级
-                            0,//循环次数，0是不循环，-1是一直循环
-                            1);//回放速度，0.5~2.0之间，1为正常速度
+
                     break;
             }
         }
@@ -210,15 +201,7 @@ public class MainActivity extends AppCompatActivity {
         initData();
         initConnection();
         getData();
-        //实例化AudioManager对象，控制声音
-        am = (AudioManager)this.getSystemService(this.AUDIO_SERVICE);
-//最大音量
-        audioMaxVolumn = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-//当前音量
-        audioCurrentVolumn = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-        volumnRatio = audioCurrentVolumn/audioMaxVolumn;
 
-        map.put(0,soundPool.load(this,R.raw.f2,1));
 
        // map.put(1, soundPool.load(this,R.raw.wrong,1));
         timer = new CountDownTimer(4 * 1000, 1000) {
@@ -246,7 +229,65 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void playAlarm() {
 
+		/*
+		 * timerVibrate=new Timer(); timerVibrate.sc
+		 */
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        vibrator.vibrate(pattern, 0);
+
+		/*
+		 * Uri alert = RingtoneManager
+		 * .getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+		 */
+        if (mMediaPlayer == null) {
+            mMediaPlayer = new MediaPlayer();
+        } else {
+            mMediaPlayer.stop();
+            mMediaPlayer.reset();
+        }
+        // mMediaPlayer = new MediaPlayer();
+        // mMediaPlayer.setDataSource(getApplicationContext(), alert);
+        music = "bugu.mp3";
+		/*if (alert == null) {
+			music = "bugu.mp3";
+		} else {
+			*//*if ("0".equals(alert.getAlertmusic())) {
+				music = "bugu.mp3";
+			} else if ("1".equals(alert.getAlertmusic())) {
+				music = "lingdang.mp3";
+			} else if ("2".equals(alert.getAlertmusic())) {
+				music = "menghuan.mp3";
+			}*//*
+		}*/
+
+        try {
+            AssetFileDescriptor fileDescriptor = getAssets().openFd(music);
+            mMediaPlayer
+                    .setDataSource(fileDescriptor.getFileDescriptor(),
+                            fileDescriptor.getStartOffset(),
+                            fileDescriptor.getLength());
+            getSystemService(AUDIO_SERVICE);
+
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+            mMediaPlayer.setLooping(true);
+            mMediaPlayer.prepare();
+            mMediaPlayer.start();
+        } catch (IllegalArgumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalStateException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        // }
+
+    }
     public static void initDpi(Context context) {
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         Configuration configuration = context.getResources().getConfiguration();
@@ -810,13 +851,7 @@ public class MainActivity extends AppCompatActivity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ready_layout:
-                soundPool.play(
-                        map.get(0),//声音资源
-                        5,//左声道
-                        5,//右声道
-                        1,//优先级
-                        0,//循环次数，0是不循环，-1是一直循环
-                        1);//回放速度，0.5~2.0之间，1为正常速度
+
                 if (info != null && info.getData() != null) {
                     startShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
                 }
