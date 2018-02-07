@@ -249,7 +249,6 @@ public class MainActivity extends AppCompatActivity {
         }
         // mMediaPlayer = new MediaPlayer();
         // mMediaPlayer.setDataSource(getApplicationContext(), alert);
-        music = "bugu.mp3";
 		/*if (alert == null) {
 			music = "bugu.mp3";
 		} else {
