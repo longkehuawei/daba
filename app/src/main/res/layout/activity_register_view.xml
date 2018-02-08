@@ -24,6 +24,14 @@
             android:text="注册"
             android:textColor="@color/title_text_color"
             android:textSize="35.0sp" />
+        <TextView
+            android:id="@+id/peizhi"
+            android:layout_width="wrap_content"
+            android:text="配置"
+            android:textColor="@color/title_text_color"
+            android:textSize="25.0sp"
+            android:layout_alignParentRight="true"
+            android:layout_height="wrap_content" />
     </RelativeLayout>
 
     <View
