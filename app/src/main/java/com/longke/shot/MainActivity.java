@@ -3,6 +3,7 @@ package com.longke.shot;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.Configuration;
 import android.media.AudioManager;
@@ -15,6 +16,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -106,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
     TextView numTv;
     MqttAndroidClient mqttAndroidClient;
 
-    final String serverUri = "tcp://192.168.31.23:1883";
+     String serverUri = "tcp://120.76.153.166:1883";
 
     String clientId = "ExampleAndroidClient";
     final String ShootReady = "ShootReady";
@@ -131,6 +133,10 @@ public class MainActivity extends AppCompatActivity {
     private Vibrator vibrator;
     private String music = "avchat_ring.mp3";
     private long[] pattern = { 0, 2000, 1000 };
+    private int clickCount;
+    private long preClickTime;
+    private boolean isShowRed=true;
+    private boolean isShowRedOpen=true;
     //存放音效的HashMap
     private Map<Integer,Integer> map = new HashMap<Integer,Integer>();
     private Handler handler = new Handler() {
@@ -183,7 +189,14 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
-
+        serverUri= (String) SharedPreferencesUtil.get(MainActivity.this,SharedPreferencesUtil.ServerUri,"");
+        if(TextUtils.isEmpty(serverUri)){
+            startActivity(new Intent(MainActivity.this,ConfigureActivity.class).putExtra("isFromMain",true));
+            finish();
+            return;
+        }
+        Urls.BASE_URL= (String) SharedPreferencesUtil.get(MainActivity.this,SharedPreferencesUtil.BASE_URL,"");
+        isShowRedOpen= (boolean) SharedPreferencesUtil.get(MainActivity.this,SharedPreferencesUtil.IS_RED,true);
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
 
@@ -199,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("width-display :" + display.getWidth());
         System.out.println("heigth-display :" + display.getHeight());
         mMyOkhttp = new MyOkHttp(okHttpClient);
-
+        shotPoint.setShowRed(isShowRedOpen);
         initData();
         initConnection();
         getData();
@@ -249,6 +262,12 @@ public class MainActivity extends AppCompatActivity {
             mMediaPlayer.stop();
             mMediaPlayer.reset();
         }
+        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+
+            }
+        });
         // mMediaPlayer = new MediaPlayer();
         // mMediaPlayer.setDataSource(getApplicationContext(), alert);
 		/*if (alert == null) {
@@ -841,6 +860,34 @@ public class MainActivity extends AppCompatActivity {
             mVideoView.setVideoURI(Uri.parse(info.getData().getVideoStreamUrl()));
             mVideoView.setAspectRatio(IRenderView.AR_16_9_FIT_PARENT);
             mVideoView.start();
+            mVideoView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (clickCount == 0) {
+                        preClickTime = System.currentTimeMillis();
+                        clickCount++;
+                    } else if (clickCount == 1) {
+                        long curTime = System.currentTimeMillis();
+                        if((curTime - preClickTime) < 500){
+                            doubleClick();
+                        }
+                        clickCount = 0;
+                        preClickTime = 0;
+                    }else{
+                        Log.e(TAG, "clickCount = " + clickCount);
+                        clickCount = 0;
+                        preClickTime = 0;
+                    }
+                }
+            });
+        }
+
+    }
+    private void doubleClick() {
+        Log.i(TAG, "double click");
+        if(isShowRedOpen){
+            isShowRed=!isShowRed;
+            shotPoint.setShowRed(isShowRed);
         }
 
     }
@@ -849,7 +896,7 @@ public class MainActivity extends AppCompatActivity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ready_layout:
-                playAlarm();
+                //playAlarm();
                 if (info != null && info.getData() != null) {
                     startShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
                 }

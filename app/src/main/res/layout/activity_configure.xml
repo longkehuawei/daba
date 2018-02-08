@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white"
+    android:scrollbars="none">
+
+    <RelativeLayout
+        android:id="@+id/title_bar"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:padding="25dp"
+        android:background="@color/title_bar_color">
+
+
+        <TextView
+            android:id="@+id/addrss_name_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+
+            android:text="配置"
+            android:textColor="@color/title_text_color"
+            android:textSize="35.0sp" />
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dip"
+        android:background="#cccccc" />
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:scrollbars="none">
+
+
+
+        <LinearLayout
+            android:id="@+id/ll_quick_login"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20.0dip"
+
+            android:orientation="vertical"
+            android:visibility="visible">
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white">
+
+                <EditText
+                    android:id="@+id/tcp_name"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@null"
+                    android:hint="请输入消息Tcp地址"
+                    android:padding="26.0dip"
+                    android:textSize="30sp"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true"
+                    android:textColorHint="@color/gray01"
+                    />
+
+
+            </RelativeLayout>
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="0.5dip"
+                android:background="#cccccc" />
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white">
+
+                <EditText
+                    android:id="@+id/url_name"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@null"
+                    android:hint="请输入服务器地址"
+                    android:padding="26.0dip"
+                    android:textSize="30sp"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true"
+                    android:textColorHint="@color/gray01"
+                    />
+
+
+            </RelativeLayout>
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="0.5dip"
+                android:background="#cccccc" />
+            <RadioButton
+                android:id="@+id/isRed"
+                android:layout_width="wrap_content"
+                android:text="是否显示红点"
+                android:checked="true"
+                android:layout_margin="26dp"
+                android:textSize="28.0sp"
+                android:layout_height="wrap_content" />
+
+
+
+
+            <Button
+                android:id="@+id/bt_queding"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10.0dip"
+                android:layout_marginRight="10.0dip"
+                android:layout_marginTop="20.0dip"
+                android:background="@drawable/round_btn_orange_self_selector"
+                android:text="确定"
+                android:padding="20dp"
+                android:textColor="@android:color/white"
+                android:textSize="28.0sp"
+                android:textStyle="bold"
+                android:visibility="visible" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
