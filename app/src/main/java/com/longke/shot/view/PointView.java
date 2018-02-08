@@ -28,6 +28,12 @@ public class PointView extends View {
     private float y;
     private float pre=1.0f;
     private boolean isShowRed=true;
+
+    public void setShowRed(boolean showRed) {
+        isShowRed = showRed;
+        invalidate();
+    }
+
     List<Info.DataBean.ShootDetailListBean> mShootDetailListBean=new ArrayList<>();
 
     public void setShootDetailListBean(List<Info.DataBean.ShootDetailListBean> shootDetailListBean) {

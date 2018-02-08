@@ -129,6 +129,9 @@ public class MainActivity extends AppCompatActivity {
     private Vibrator vibrator;
     private String music = "avchat_ring.mp3";
     private long[] pattern = { 0, 2000, 1000 };
+    private int clickCount;
+    private long preClickTime;
+    private boolean isShowRed=true;
     //存放音效的HashMap
     private Map<Integer,Integer> map = new HashMap<Integer,Integer>();
     private Handler handler = new Handler() {
@@ -839,8 +842,33 @@ public class MainActivity extends AppCompatActivity {
             mVideoView.setVideoURI(Uri.parse(info.getData().getVideoStreamUrl()));
             mVideoView.setAspectRatio(IRenderView.AR_16_9_FIT_PARENT);
             mVideoView.start();
+            mVideoView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (clickCount == 0) {
+                        preClickTime = System.currentTimeMillis();
+                        clickCount++;
+                    } else if (clickCount == 1) {
+                        long curTime = System.currentTimeMillis();
+                        if((curTime - preClickTime) < 500){
+                            doubleClick();
+                        }
+                        clickCount = 0;
+                        preClickTime = 0;
+                    }else{
+                        Log.e(TAG, "clickCount = " + clickCount);
+                        clickCount = 0;
+                        preClickTime = 0;
+                    }
+                }
+            });
         }
 
+    }
+    private void doubleClick() {
+        Log.i(TAG, "double click");
+        isShowRed=!isShowRed;
+        shotPoint.setShowRed(isShowRed);
     }
 
     @OnClick({R.id.ready_layout, R.id.end_layout})
