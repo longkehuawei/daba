@@ -16,8 +16,7 @@ public class ConfigureActivity extends AppCompatActivity {
 
     @InjectView(R.id.addrss_name_tv)
     TextView addrssNameTv;
-    @InjectView(R.id.tcp_name)
-    EditText tcpName;
+
     @InjectView(R.id.url_name)
     EditText urlName;
     @InjectView(R.id.isRed)
@@ -32,13 +31,11 @@ public class ConfigureActivity extends AppCompatActivity {
         setContentView(R.layout.activity_configure);
         ButterKnife.inject(this);
         isFromMain=getIntent().getBooleanExtra("isFromMain",false);
-        tcpName.setText("tcp://120.76.153.166:1883");
         urlName.setText("http://120.76.153.166:6002");
     }
 
     @OnClick(R.id.bt_queding)
     public void onViewClicked() {
-        SharedPreferencesUtil.put(ConfigureActivity.this,SharedPreferencesUtil.ServerUri,tcpName.getText().toString());
         SharedPreferencesUtil.put(ConfigureActivity.this,SharedPreferencesUtil.BASE_URL,urlName.getText().toString());
         SharedPreferencesUtil.put(ConfigureActivity.this,SharedPreferencesUtil.IS_RED,isRed.isChecked());
         if(isFromMain){

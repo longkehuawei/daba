@@ -28,6 +28,12 @@ public class PointView extends View {
     private float y;
     private float pre=1.0f;
     private boolean isShowRed=true;
+    private boolean isShowAll=true;
+
+    public void setShowAll(boolean showAll) {
+        isShowAll = showAll;
+        invalidate();
+    }
 
     public void setShowRed(boolean showRed) {
         isShowRed = showRed;
@@ -77,21 +83,26 @@ public class PointView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        for(int i=0;i<mShootDetailListBean.size();i++){
-            if(i==mShootDetailListBean.size()-1){
-                mPaint.setColor(Color.parseColor("#00FF00"));
-            }else{
-                mPaint.setColor(mPointColor);
-            }
-            Info.DataBean.ShootDetailListBean shootDetailListBean=mShootDetailListBean.get(i);
-            canvas.drawCircle(shootDetailListBean.getX()*pre,shootDetailListBean.getY()*pre,shootDetailListBean.getWidth()*pre/2,mPaint);
-            if(isShowRed){
-                mPaint.setColor(Color.parseColor("#ffff00"));
-                mPaint.setTextSize(20);
-                canvas.drawText(""+(i+1), shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getWidth()*pre/2, mPaint);
-            }
+        if(isShowAll){
+            for(int i=0;i<mShootDetailListBean.size();i++){
+                if(i==mShootDetailListBean.size()-1){
+                    mPaint.setColor(Color.parseColor("#00FF00"));
+                }else{
+                    mPaint.setColor(mPointColor);
+                }
+                mPaint.setStyle(Paint.Style.STROKE);//设置空心
+                Info.DataBean.ShootDetailListBean shootDetailListBean=mShootDetailListBean.get(i);
+                canvas.drawRect(shootDetailListBean.getX()*pre, shootDetailListBean.getY()*pre, shootDetailListBean.getX()*pre+shootDetailListBean.getWidth()*pre, shootDetailListBean.getY()*pre+shootDetailListBean.getHeight()*pre, mPaint);
+                //canvas.drawCircle(shootDetailListBean.getX()*pre,shootDetailListBean.getY()*pre,shootDetailListBean.getWidth()*pre/2,mPaint);
+                if(isShowRed){
+                    mPaint.setColor(Color.parseColor("#ffff00"));
+                    mPaint.setTextSize(20);
+                    canvas.drawText(shootDetailListBean.getBulletIndex()+"", shootDetailListBean.getX()*pre, shootDetailListBean.getY()*pre, mPaint);
+                }
 
+            }
         }
+
         if(mShootDetailListBean.size()==0){
             canvas.drawColor(0, PorterDuff.Mode.CLEAR);
         }

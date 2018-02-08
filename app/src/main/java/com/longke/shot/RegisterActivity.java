@@ -60,12 +60,12 @@ public class RegisterActivity extends Activity {
         ButterKnife.inject(this);
         mMyOkhttp = new MyOkHttp(okHttpClient);
 
-        String sn = (String) SharedPreferencesUtil.get(RegisterActivity.this, "SN", "");
+       /* String sn = (String) SharedPreferencesUtil.get(RegisterActivity.this, "SN", "");
         if (!isEmpty(sn)) {
             startActivity(new Intent(RegisterActivity.this, MainActivity.class));
             finish();
             return;
-        }
+        }*/
         deviceId = UUIDS.getUUID();
         mSnText.setText("pad序列号:" + deviceId);
 
@@ -154,7 +154,7 @@ public class RegisterActivity extends Activity {
      * 获取数据
      */
     private void register() {
-        mMyOkhttp.post().url(Urls.RegistPad)
+        mMyOkhttp.post().url(Urls.BASE_URL+Urls.RegistPad)
                 .addParam("SN", deviceId)
                 .addParam("Name", mPadName.getText().toString())
                 .tag(this)

@@ -129,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
     String TrainId;
     String GroupIndex;
     String VideoStreamUrl;
+    boolean isFrist=true;
     private MediaPlayer mMediaPlayer;
     private Vibrator vibrator;
     private String music = "avchat_ring.mp3";
@@ -137,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
     private long preClickTime;
     private boolean isShowRed=true;
     private boolean isShowRedOpen=true;
+    String sn;
     //存放音效的HashMap
     private Map<Integer,Integer> map = new HashMap<Integer,Integer>();
     private Handler handler = new Handler() {
@@ -189,13 +191,15 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
-        serverUri= (String) SharedPreferencesUtil.get(MainActivity.this,SharedPreferencesUtil.ServerUri,"");
-        if(TextUtils.isEmpty(serverUri)){
+
+
+        sn = UUIDS.getUUID();
+        Urls.BASE_URL= (String) SharedPreferencesUtil.get(MainActivity.this,SharedPreferencesUtil.BASE_URL,"");
+        if(TextUtils.isEmpty(Urls.BASE_URL)){
             startActivity(new Intent(MainActivity.this,ConfigureActivity.class).putExtra("isFromMain",true));
             finish();
             return;
         }
-        Urls.BASE_URL= (String) SharedPreferencesUtil.get(MainActivity.this,SharedPreferencesUtil.BASE_URL,"");
         isShowRedOpen= (boolean) SharedPreferencesUtil.get(MainActivity.this,SharedPreferencesUtil.IS_RED,true);
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -212,10 +216,32 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("width-display :" + display.getWidth());
         System.out.println("heigth-display :" + display.getHeight());
         mMyOkhttp = new MyOkHttp(okHttpClient);
+        shotPoint.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (clickCount == 0) {
+                    preClickTime = System.currentTimeMillis();
+                    clickCount++;
+                } else if (clickCount == 1) {
+                    long curTime = System.currentTimeMillis();
+                    if((curTime - preClickTime) < 500){
+                        doubleClick();
+                    }
+                    clickCount = 0;
+                    preClickTime = 0;
+                }else{
+                    Log.e(TAG, "clickCount = " + clickCount);
+                    clickCount = 0;
+                    preClickTime = 0;
+                }
+            }
+        });
         shotPoint.setShowRed(isShowRedOpen);
         initData();
         initConnection();
-        getData();
+        DeviceIsRegist();
+        GetConfigData();
+       // getData();
 
 
        // map.put(1, soundPool.load(this,R.raw.wrong,1));
@@ -384,8 +410,7 @@ public class MainActivity extends AppCompatActivity {
      * 获取数据
      */
     private void getData() {
-        String sn = (String) SharedPreferencesUtil.get(MainActivity.this, "SN", "");
-        mMyOkhttp.get().url(Urls.GetTrainStudentData)
+        mMyOkhttp.get().url(Urls.BASE_URL+Urls.GetTrainStudentData)
                 .addParam("padCode", sn)
                 .tag(this)
                 .enqueue(new JsonResponseHandler() {
@@ -400,14 +425,31 @@ public class MainActivity extends AppCompatActivity {
                             return;
                         }
                         mName.setText("姓名 ：" + data.getStudentName());
-                        mZuhao.setText("组号 ：" + data.getGroupIndex() + "");
+                        mZuhao.setText("组号 ：第" + data.getGroupIndex() + "组");
                         mXuehao.setText("学号 ：" + data.getStudentCode() + "");
                         mKemu.setText("科目 ：" + data.getShootModeName() + "");
                         mBencisheji.setText(data.getCurrScore() + "");
-                        mShengyuzidan.setText(data.getRemainBullet() + "");
+
                         mZongchengji.setText(data.getTotalScore() + "");
+                        if(data.getShootDetailList()==null||data.getShootDetailList().size()==0){
+                            mShengyuzidan.setText( "0");
+                        }else{
+                            mShengyuzidan.setText(data.getShootDetailList().get(data.getShootDetailList().size()-1).getBulletIndex()+"");
+
+                        }
+
                         mShengyushijian.setText(data.getRemainTime());
-                        setVideoUri();
+                        if(isFrist){
+                            setVideoUri();
+                            list = data.getShootDetailList();
+                            if (list != null) {
+                                shotPoint.setShootDetailListBean(list);
+                            } else {
+                                list = new ArrayList<Info.DataBean.ShootDetailListBean>();
+                                shotPoint.setShootDetailListBean(list);
+                            }
+                            isFrist=false;
+                        }
                         if (info.getData().getStatus() == 0 || info.getData().getStatus() == 2 || info.getData().getStatus() == 4) {
                             mReadyLayout.setClickable(false);
                             mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
@@ -440,13 +482,86 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
+    /**
+     * 获取配置
+     */
+    private void GetConfigData() {
+        mMyOkhttp.get().url(Urls.BASE_URL+Urls.GetConfigData)
+                .tag(this)
+                .enqueue(new JsonResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, JSONObject response) {
+                        try {
+                            JSONObject object=  response.getJSONObject("Data");
+                            String MqttServerIP=object.getString("MqttServerIP");
+                            String MqttPort=object.getString("MqttPort");
+                            serverUri="tcp://"+MqttServerIP+":"+MqttPort;
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                    @Override
+                    public void onSuccess(int statusCode, JSONArray response) {
+                        Log.d(TAG, "doPost onSuccess JSONArray:" + response);
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, String error_msg) {
+                        Log.d(TAG, "doPost onFailure:" + error_msg);
+                        // ToastUtil.showShort(BaseApplication.context,error_msg);
+                    }
+                });
+    }
+    /**
+     * 获取数据
+     */
+    private void DeviceIsRegist() {
+
+        mMyOkhttp.get().url(Urls.BASE_URL+Urls.DeviceIsRegist)
+                .addParam("type", "1")
+                .addParam("code", sn)
+                .tag(this)
+                .enqueue(new JsonResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, JSONObject response) {
+                        Log.d(TAG, "doPost onSuccess JSONObject:" + response);
+                        try {
+                            JSONObject object=  response.getJSONObject("Data");
+                            boolean Data=object.getBoolean("IsRegist");
+                            if(!Data){
+                                startActivity(new Intent(MainActivity.this,RegisterActivity.class));
+                                finish();
+                            }else{
+                                getData();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                    @Override
+                    public void onSuccess(int statusCode, JSONArray response) {
+                        Log.d(TAG, "doPost onSuccess JSONArray:" + response);
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, String error_msg) {
+                        Log.d(TAG, "doPost onFailure:" + error_msg);
+                        // ToastUtil.showShort(BaseApplication.context,error_msg);
+                    }
+                });
+    }
 
     /**
      * 获取数据
      */
     private void GetTrainStudentDataByGroupId() {
-        String sn = (String) SharedPreferencesUtil.get(MainActivity.this, "SN", "");
-        mMyOkhttp.get().url(Urls.GetTrainStudentDataByGroupId)
+        mMyOkhttp.get().url(Urls.BASE_URL+Urls.GetTrainStudentDataByGroupId)
                 .addParam("trainId", TrainId + "")
                 .addParam("groupIndex", GroupIndex + "")
                 .addParam("padCode", sn)
@@ -455,17 +570,28 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(int statusCode, JSONObject response) {
                         Log.d(TAG, "doPost onSuccess JSONObject:" + response);
+                        boolean isNull = false;
+                        if(info==null||info.getData()==null){
+                            isNull=true;
+                        }
                         info = new Gson().fromJson(response.toString(), Info.class);
                         Info.DataBean data = info.getData();
                         mName.setText("姓名 ：" + data.getStudentName());
-                        mZuhao.setText("组号 ：" + data.getGroupIndex() + "");
+                        mZuhao.setText("组号 ：第" + data.getGroupIndex() + "组");
                         mXuehao.setText("学号 ：" + data.getStudentCode() + "");
                         mKemu.setText("科目 ：" + data.getShootModeName() + "");
                         mBencisheji.setText(data.getCurrScore() + "");
-                        mShengyuzidan.setText(data.getRemainBullet() + "");
+                        if(data.getShootDetailList()==null||data.getShootDetailList().size()==0){
+                            mShengyuzidan.setText( "0");
+                        }else{
+                            mShengyuzidan.setText(data.getShootDetailList().get(data.getShootDetailList().size()-1).getBulletIndex()+"");
+
+                        }
                         mZongchengji.setText(data.getTotalScore() + "");
                         mShengyushijian.setText(data.getRemainTime());
-
+                        if(isNull){
+                            setVideoUri();
+                        }
                         list = data.getShootDetailList();
                         if (list != null) {
                             shotPoint.setShootDetailListBean(list);
@@ -529,7 +655,7 @@ public class MainActivity extends AppCompatActivity {
      * @param studentId
      */
     private void startShot(final String trainId, String studentId) {
-        mMyOkhttp.get().url(Urls.StartShoot)
+        mMyOkhttp.get().url(Urls.BASE_URL+Urls.StartShoot)
                 .addParam("trainId", trainId)
                 .addParam("studentId", studentId)
                 .tag(this)
@@ -572,7 +698,7 @@ public class MainActivity extends AppCompatActivity {
      * @param studentId
      */
     private void endShot(String trainId, String studentId) {
-        mMyOkhttp.get().url(Urls.EndShoot)
+        mMyOkhttp.get().url(Urls.BASE_URL+Urls.EndShoot)
                 .addParam("trainId", trainId)
                 .addParam("studentId", studentId)
                 .tag(this)
@@ -707,6 +833,7 @@ public class MainActivity extends AppCompatActivity {
                             bean.setBulletIndex(object.getInt("BulletIndex"));
                             bean.setY(object.getInt("Y"));
                             bean.setWidth(object.getInt("Width"));
+                            bean.setHeight(object.getInt("Height"));
                             list.add(bean);
                             handler.sendEmptyMessage(3);
 
@@ -860,39 +987,20 @@ public class MainActivity extends AppCompatActivity {
             mVideoView.setVideoURI(Uri.parse(info.getData().getVideoStreamUrl()));
             mVideoView.setAspectRatio(IRenderView.AR_16_9_FIT_PARENT);
             mVideoView.start();
-            mVideoView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (clickCount == 0) {
-                        preClickTime = System.currentTimeMillis();
-                        clickCount++;
-                    } else if (clickCount == 1) {
-                        long curTime = System.currentTimeMillis();
-                        if((curTime - preClickTime) < 500){
-                            doubleClick();
-                        }
-                        clickCount = 0;
-                        preClickTime = 0;
-                    }else{
-                        Log.e(TAG, "clickCount = " + clickCount);
-                        clickCount = 0;
-                        preClickTime = 0;
-                    }
-                }
-            });
+
         }
 
     }
     private void doubleClick() {
         Log.i(TAG, "double click");
-        if(isShowRedOpen){
+        //if(isShowRedOpen){
             isShowRed=!isShowRed;
-            shotPoint.setShowRed(isShowRed);
-        }
+            shotPoint.setShowAll(isShowRed);
+        //}
 
     }
 
-    @OnClick({R.id.ready_layout, R.id.end_layout})
+    @OnClick({R.id.ready_layout, R.id.end_layout,R.id.sheshouxinxi})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ready_layout:
@@ -906,6 +1014,9 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 endShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
+                break;
+            case R.id.sheshouxinxi:
+                startActivity(new Intent(MainActivity.this,ConfigureActivity.class));
                 break;
         }
     }
