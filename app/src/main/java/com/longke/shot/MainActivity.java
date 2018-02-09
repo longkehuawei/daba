@@ -6,9 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.Configuration;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -51,6 +49,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,8 +61,6 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 import okhttp3.OkHttpClient;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
-
-import static android.content.Context.AUDIO_SERVICE;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -138,6 +135,11 @@ public class MainActivity extends AppCompatActivity {
     private long preClickTime;
     private boolean isShowRed=true;
     private boolean isShowRedOpen=true;
+    private ArrayList<String> mMusicList = new ArrayList<>();
+    private int mPosition;
+    private boolean mIsPlaying = false;
+
+
     String sn;
     //存放音效的HashMap
     private Map<Integer,Integer> map = new HashMap<Integer,Integer>();
@@ -146,6 +148,7 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {      //判断标志位
+
                 case 1:
                     /**
                      获取数据，更新UI
@@ -164,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
                     getData();
                     if (list != null) {
                         shotPoint.setShootDetailListBean(list);
+                        sendBroadcast(new Intent(Constants.ACTION_LIST_ITEM).putExtra("music_list",(Serializable)list));
                     }
                     break;
                 case 4://结束
@@ -269,6 +273,38 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+    private void playInit() {
+        //音乐列表
+        //mMusicList = MediaUtil.getMp3Infos(this);
+        //启动音乐服务
+        startMusicService();
+
+
+    }
+    private void sendBroadcast(String action) {
+        Intent intent = new Intent();
+        intent.setAction(action);
+        sendBroadcast(intent);
+    }
+
+    private void sendBroadcast(String action, int position) {
+        Intent intent = new Intent();
+        intent.putExtra("position", position);
+        intent.setAction(action);
+        sendBroadcast(intent);
+    }
+
+    /**
+     * 开始音乐服务并传输数据
+     */
+    private void startMusicService() {
+        Intent musicService = new Intent();
+        musicService.setClass(getApplicationContext(), MusicService.class);
+        musicService.putExtra("music_list",(Serializable)list);
+        //musicService.putExtra("messenger", new Messenger(handler));
+        startService(musicService);
+    }
+
 
     private void playAlarm() {
 
@@ -437,7 +473,6 @@ public class MainActivity extends AppCompatActivity {
                             mShengyuzidan.setText(data.getShootDetailList().get(data.getShootDetailList().size()-1).getBulletIndex()+"");
 
                         }
-
                         mShengyushijian.setText(data.getRemainTime());
                         if(isFrist){
                             setVideoUri();

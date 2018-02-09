@@ -1,5 +1,6 @@
 package com.longke.shot.entity;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -336,7 +337,7 @@ public class Info {
             this.ShootDetailList = ShootDetailList;
         }*/
 
-        public static class ShootDetailListBean {
+        public static class ShootDetailListBean implements Serializable{
             /**
              * BulletIndex : 1
              * X : 604

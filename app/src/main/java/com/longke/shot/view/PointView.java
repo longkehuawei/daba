@@ -92,12 +92,12 @@ public class PointView extends View {
                 }
                 mPaint.setStyle(Paint.Style.STROKE);//设置空心
                 Info.DataBean.ShootDetailListBean shootDetailListBean=mShootDetailListBean.get(i);
-                canvas.drawRect(shootDetailListBean.getX()*pre, shootDetailListBean.getY()*pre, shootDetailListBean.getX()*pre+shootDetailListBean.getWidth()*pre, shootDetailListBean.getY()*pre+shootDetailListBean.getHeight()*pre, mPaint);
+                canvas.drawRect(shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, shootDetailListBean.getX()*pre+shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre+shootDetailListBean.getHeight()*pre/2, mPaint);
                 //canvas.drawCircle(shootDetailListBean.getX()*pre,shootDetailListBean.getY()*pre,shootDetailListBean.getWidth()*pre/2,mPaint);
                 if(isShowRed){
                     mPaint.setColor(Color.parseColor("#ffff00"));
                     mPaint.setTextSize(20);
-                    canvas.drawText(shootDetailListBean.getBulletIndex()+"", shootDetailListBean.getX()*pre, shootDetailListBean.getY()*pre, mPaint);
+                    canvas.drawText(shootDetailListBean.getBulletIndex()+"", shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, mPaint);
                 }
 
             }
