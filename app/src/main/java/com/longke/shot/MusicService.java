@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static android.R.attr.id;
+
 /**
  * 作者：$ longke on 2018/2/9 08:42
  * 邮箱：373497847@qq.com
@@ -43,6 +45,7 @@ public class MusicService extends Service implements MediaPlayer.OnErrorListener
     private Message mMessage;
     private static boolean isLoseFocus;
     private NotificationManager notificationManager;
+    private boolean isFrist=true;
 
     @Override
     public void onCreate() {
@@ -98,11 +101,11 @@ public class MusicService extends Service implements MediaPlayer.OnErrorListener
         notificationManager.cancel(Constants.NOTIFICATION_CEDE);
         mMessage = Message.obtain();
         mMessage.what = Constants.MSG_CANCEL;
-        try {
+       /* try {
             mMessenger.send(mMessage);
         } catch (RemoteException e) {
             e.printStackTrace();
-        }
+        }*/
         if (mPlayer != null) {
             mPlayer.stop();
             mPlayer.release();
@@ -147,12 +150,12 @@ public class MusicService extends Service implements MediaPlayer.OnErrorListener
         mMessage = Message.obtain();
         mMessage.what = Constants.MSG_PLAY_STATE;
         mMessage.obj = mPlayer.isPlaying();
-        try {
+       /* try {
             //发送播放状态
             mMessenger.send(mMessage);
         } catch (RemoteException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     private void sentPositionToMainByTimer() {
@@ -192,12 +195,54 @@ public class MusicService extends Service implements MediaPlayer.OnErrorListener
         if (mPlayer != null && mMusic_list.size() > 0) {
             mPlayer.reset();
             try {
-                AssetFileDescriptor file = getResources().openRawResourceFd(R.raw.f2);
+                if(position>=mMusic_list.size()-1){
+                    return;
+                }
+                int id=mMusic_list.get(position).getScore();
+                int fd = 0;
+                switch (id){
+                    case 0:
+                        fd=R.raw.f0;
+                        break;
+                    case  1:
+                        fd=R.raw.f1;
+                       break;
+                    case  2:
+                        fd=R.raw.f2;
+                        break;
+                    case  3:
+                        fd=R.raw.f3;
+                        break;
+                    case  4:
+                        fd=R.raw.f4;
+                        break;
+                    case  5:
+                        fd=R.raw.f5;
+                        break;
+                    case  6:
+                        fd=R.raw.f6;
+                        break;
+                    case  7:
+                        fd=R.raw.f7;
+                        break;
+                    case  8:
+                        fd=R.raw.f8;
+                        break;
+                    case  9:
+                        fd=R.raw.f9;
+                        break;
+                    case  10:
+                        fd=R.raw.f10;
+                        break;
+
+                }
+                AssetFileDescriptor file = getResources().openRawResourceFd(fd);
 
                 mPlayer.setDataSource(file.getFileDescriptor(), file.getStartOffset(),
                             file.getLength());
-                //mPlayer.setDataSource(mMusic_list.get(position).getScore()+"");
+
                 mPlayer.prepareAsync();
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -244,9 +289,24 @@ public class MusicService extends Service implements MediaPlayer.OnErrorListener
                 case Constants.ACTION_LIST_ITEM:
                     Log.i(TAG, "onReceive: ACTION_LIST_ITEM");
                     //点击左侧菜单
+                    mPosition=0;
                     mMusic_list = (List<Info.DataBean.ShootDetailListBean>) intent.getSerializableExtra("music_list");
+
+                    if (mPlayer != null) {
+                        if(!mPlayer.isPlaying()){
+                            mPlayer.start();
+                        }
+                    }
+                    /*if (mPlayer != null) {
+                        if(!mPlayer.isPlaying()){
+                            mPlayer.start();
+                        }
+                    }else {
+                        initPlayer();
+                        play(mPosition);
+                    }*/
                    // mPosition = intent.getIntExtra("position", 0);
-                    play(mPosition);
+                   // play(mPosition);
                     break;
                 case Constants.ACTION_PAUSE:
                     Log.i(TAG, "onReceive: ACTION_PAUSE");
@@ -255,14 +315,18 @@ public class MusicService extends Service implements MediaPlayer.OnErrorListener
                     break;
                 case Constants.ACTION_PLAY:
                     Log.i(TAG, "onReceive: ACTION_PLAY");
+                    mMusic_list = (List<Info.DataBean.ShootDetailListBean>) intent.getSerializableExtra("music_list");
                     //开始播放
                     if (mPlayer != null) {
+                        Log.i(TAG, "mPlayer"+mMusic_list.size()+"mPosition"+mPosition);
                         //mPlayer.seekTo(mCurrentPosition);
+                       // play(mPosition);
                         mPlayer.start();
                         //通知是否在播放
                         sentPlayStateToMain();
                     }else {
                         initPlayer();
+                        Log.i(TAG, "mMusic_list.size"+mMusic_list.size()+"mPosition"+mPosition);
                         play(mPosition);
                     }
                     break;
@@ -277,7 +341,7 @@ public class MusicService extends Service implements MediaPlayer.OnErrorListener
                         if (mPosition <= mMusic_list.size() - 1) {
                             play(mPosition);
                         } else {
-                            mPosition = 0;
+                            //mPosition = 0;
                             play(mPosition);
                         }
                     } else if (playMode % 3 == 0) {// 0.随机播放
@@ -296,7 +360,11 @@ public class MusicService extends Service implements MediaPlayer.OnErrorListener
                             mPosition = mMusic_list.size() - 1;
                             play(mPosition);
                         } else {
-                            play(mPosition);
+                            if(isFrist){
+                                play(mPosition);
+                                isFrist=false;
+                            }
+
                         }
                     } else if (playMode % 3 == 0) {// 0.随机播放
                         play(getRandom());

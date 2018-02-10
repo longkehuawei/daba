@@ -41,6 +41,14 @@ public class PointView extends View {
     }
 
     List<Info.DataBean.ShootDetailListBean> mShootDetailListBean=new ArrayList<>();
+    List<Info.DataBean.ShootDetailListBean> mTempShootDetailListBean=new ArrayList<>();
+
+
+
+    public void setTempShootDetailListBean(List<Info.DataBean.ShootDetailListBean> tempShootDetailListBean) {
+        mTempShootDetailListBean = tempShootDetailListBean;
+        invalidate();
+    }
 
     public void setShootDetailListBean(List<Info.DataBean.ShootDetailListBean> shootDetailListBean) {
         mShootDetailListBean = shootDetailListBean;
@@ -84,6 +92,24 @@ public class PointView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if(isShowAll){
+
+            for(int i=0;i<mTempShootDetailListBean.size();i++){
+                if(i==mTempShootDetailListBean.size()-1){
+                    mPaint.setColor(Color.parseColor("#0092FD"));
+                }else{
+                    mPaint.setColor(Color.parseColor("#0092FD"));
+                }
+                mPaint.setStyle(Paint.Style.STROKE);//设置空心
+                Info.DataBean.ShootDetailListBean shootDetailListBean=mTempShootDetailListBean.get(i);
+                canvas.drawRect(shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, shootDetailListBean.getX()*pre+shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre+shootDetailListBean.getHeight()*pre/2, mPaint);
+                //canvas.drawCircle(shootDetailListBean.getX()*pre,shootDetailListBean.getY()*pre,shootDetailListBean.getWidth()*pre/2,mPaint);
+                if(isShowRed){
+                    mPaint.setColor(Color.parseColor("#0092FD"));
+                    mPaint.setTextSize(20);
+                    canvas.drawText(shootDetailListBean.getBulletIndex()+"", shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, mPaint);
+                }
+
+            }
             for(int i=0;i<mShootDetailListBean.size();i++){
                 if(i==mShootDetailListBean.size()-1){
                     mPaint.setColor(Color.parseColor("#00FF00"));
@@ -95,7 +121,7 @@ public class PointView extends View {
                 canvas.drawRect(shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, shootDetailListBean.getX()*pre+shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre+shootDetailListBean.getHeight()*pre/2, mPaint);
                 //canvas.drawCircle(shootDetailListBean.getX()*pre,shootDetailListBean.getY()*pre,shootDetailListBean.getWidth()*pre/2,mPaint);
                 if(isShowRed){
-                    mPaint.setColor(Color.parseColor("#ffff00"));
+                    mPaint.setColor(Color.parseColor("#0092FD"));
                     mPaint.setTextSize(20);
                     canvas.drawText(shootDetailListBean.getBulletIndex()+"", shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, mPaint);
                 }
@@ -105,7 +131,25 @@ public class PointView extends View {
 
         if(mShootDetailListBean.size()==0){
             canvas.drawColor(0, PorterDuff.Mode.CLEAR);
+            for(int i=0;i<mTempShootDetailListBean.size();i++){
+                if(i==mTempShootDetailListBean.size()-1){
+                    mPaint.setColor(Color.parseColor("#0092FD"));
+                }else{
+                    mPaint.setColor(Color.parseColor("#0092FD"));
+                }
+                mPaint.setStyle(Paint.Style.STROKE);//设置空心
+                Info.DataBean.ShootDetailListBean shootDetailListBean=mTempShootDetailListBean.get(i);
+                canvas.drawRect(shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, shootDetailListBean.getX()*pre+shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre+shootDetailListBean.getHeight()*pre/2, mPaint);
+                //canvas.drawCircle(shootDetailListBean.getX()*pre,shootDetailListBean.getY()*pre,shootDetailListBean.getWidth()*pre/2,mPaint);
+                if(isShowRed){
+                    mPaint.setColor(Color.parseColor("#0092FD"));
+                    mPaint.setTextSize(20);
+                    canvas.drawText(shootDetailListBean.getBulletIndex()+"", shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, mPaint);
+                }
+
+            }
         }
+
 
     }
     @Override
