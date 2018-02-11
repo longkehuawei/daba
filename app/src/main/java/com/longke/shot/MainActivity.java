@@ -27,8 +27,7 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.iflytek.cloud.SpeechConstant;
-import com.iflytek.cloud.SpeechUtility;
+
 import com.longke.shot.entity.Heartbeat;
 import com.longke.shot.entity.Info;
 import com.longke.shot.media.IRenderView;
@@ -240,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
-        SpeechUtility.createUtility(MainActivity.this, SpeechConstant.APPID + "=5a7d9660");
+
         isShowRedOpen= (boolean) SharedPreferencesUtil.get(MainActivity.this,SharedPreferencesUtil.IS_RED,true);
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -322,36 +321,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    /**
-     * 开始音乐服务并传输数据
-     */
-    private void startMusicService() {
-        Intent musicService = new Intent();
-        musicService.setClass(getApplicationContext(), MusicService.class);
-        /*Info.DataBean.ShootDetailListBean info=new Info.DataBean.ShootDetailListBean();
-        info.setScore(3);
-        list.add(info);*/
-        musicService.putExtra("music_list",(Serializable)list);
 
-        //musicService.putExtra("messenger", new Messenger(handler));
-        startService(musicService);
-        //Info.DataBean.ShootDetailListBean info=new Info.DataBean.ShootDetailListBean();
-
-       /* info.setScore(6);
-        list.add(info);
-        sendBroadcast(new Intent(Constants.ACTION_PLAY).putExtra("music_list",(Serializable)list));*/
-       /* handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Info.DataBean.ShootDetailListBean info=new Info.DataBean.ShootDetailListBean();
-
-                info.setScore(6);
-                list.add(info);
-                sendBroadcast(new Intent(Constants.ACTION_PLAY).putExtra("music_list",(Serializable)list));
-            }
-        },1000);*/
-
-    }
 
     @Override
     protected void onDestroy() {
@@ -468,12 +438,7 @@ public class MainActivity extends AppCompatActivity {
         // }
 
     }
-    public static void initDpi(Context context) {
-        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-        Configuration configuration = context.getResources().getConfiguration();
-        configuration.densityDpi = DisplayMetrics.DENSITY_XHIGH;//densityDpi 值越大，那显示时 dp对应的pix就越大
-        context.getResources().updateConfiguration(configuration, displayMetrics);
-    }
+
 
     /**
      * 建立连接
@@ -790,20 +755,28 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void ShowCountDialog(String num) {
-        if (ShowLoginDialog == null) {
-            View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.count_down_layout, null);
-            numTv = (TextView) view.findViewById(R.id.num_tv);
-            numTv.setText(num);
-            ShowLoginDialog = DialogUtil.dialog(this, view);
-        } else {
-            numTv.setText(num);
-        }
+    private void publishMessageDialog(String message){
+        View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_not_login, null);
+        TextView textView= (TextView) view.findViewById(R.id.title_text);
+        TextView okText= (TextView) view.findViewById(R.id.btn_ok);
+        textView.setText(message);
+        okText.setText("好的");
+        view.findViewById(R.id.btn_cancel).setVisibility(View.GONE);
+        final Dialog ShowLoginDialog = DialogUtil.dialog(this, view);
+        okText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-        if (!ShowLoginDialog.isShowing()) {
-            ShowLoginDialog.show();
-        }
-
+                ShowLoginDialog.dismiss();
+            }
+        });
+        view.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ShowLoginDialog.dismiss();
+            }
+        });
+        ShowLoginDialog.show();
     }
 
     /**
