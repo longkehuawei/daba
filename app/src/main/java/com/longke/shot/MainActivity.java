@@ -143,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
     private long preClickTime;
     private boolean isShowRed=true;
     private boolean isShowRedOpen=true;
+    private boolean IS_RADIO=true;
     private ArrayList<String> mMusicList = new ArrayList<>();
     private int mPosition;
     private boolean mIsPlaying = false;
@@ -193,8 +194,10 @@ public class MainActivity extends AppCompatActivity {
                             }
                             listRadio.add(msg.getData().getInt("ID"));
                             if(listRadio.size()==1){
+                                if(IS_RADIO){
+                                    playAlarm(msg.getData().getInt("ID"));
+                                }
 
-                                playAlarm(msg.getData().getInt("ID"));
                             }
                         }
 
@@ -241,6 +244,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         isShowRedOpen= (boolean) SharedPreferencesUtil.get(MainActivity.this,SharedPreferencesUtil.IS_RED,true);
+        IS_RADIO= (boolean) SharedPreferencesUtil.get(MainActivity.this,SharedPreferencesUtil.IS_RADIO,true);
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
 
