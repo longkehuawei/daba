@@ -73,10 +73,22 @@
                 android:layout_width="fill_parent"
                 android:layout_height="0.5dip"
                 android:background="#cccccc" />
-            <RadioButton
+            <CheckBox
                 android:id="@+id/isRed"
                 android:layout_width="wrap_content"
                 android:text="是否显示数字"
+                android:checked="true"
+                android:layout_margin="26dp"
+                android:textSize="28.0sp"
+                android:layout_height="wrap_content" />
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="0.5dip"
+                android:background="#cccccc" />
+            <CheckBox
+                android:id="@+id/isRadio"
+                android:layout_width="wrap_content"
+                android:text="是否播报"
                 android:checked="true"
                 android:layout_margin="26dp"
                 android:textSize="28.0sp"

@@ -17,6 +17,7 @@ public class SharedPreferencesUtil {
     public static final String ServerUri="serverUri" ;
     public static final String BASE_URL="BASE_URL" ;
     public static final String IS_RED="isRed" ;
+    public static final String IS_RADIO="isRadio" ;
     /**
      * 保存在手机里面的文件名
      */
