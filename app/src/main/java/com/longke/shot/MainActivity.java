@@ -2,10 +2,8 @@ package com.longke.shot;
 
 
 import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
-import android.content.res.Configuration;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,12 +20,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
 import com.longke.shot.entity.Heartbeat;
 import com.longke.shot.entity.Info;
 import com.longke.shot.media.IRenderView;
@@ -52,7 +50,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +63,8 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 import okhttp3.OkHttpClient;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
+
+import static com.longke.shot.SharedPreferencesUtil.IS_VISITOR;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -91,8 +90,7 @@ public class MainActivity extends AppCompatActivity {
     TextView mZongchengji;
     @InjectView(R.id.shengyushijian)
     TextView mShengyushijian;
-    @InjectView(R.id.shot_btn)
-    TextView mShotBtn;
+
     @InjectView(R.id.ready_layout)
     LinearLayout mReadyLayout;
     @InjectView(R.id.end_layout)
@@ -104,6 +102,14 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout mNumLayout;
     @InjectView(R.id.kaishi)
     TextView mKaishi;
+    @InjectView(R.id.kaishi_title)
+    TextView mKaishiTitle;
+    @InjectView(R.id.shot_btn)
+    TextView mShotBtn;
+    @InjectView(R.id.activity_main)
+    RelativeLayout mActivityMain;
+    @InjectView(R.id.remaining_time)
+    LinearLayout mRemainingTime;
     private IjkVideoView mVideoView;
     private PointView shotPoint;
     private int mDuration;
@@ -111,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
     TextView numTv;
     MqttAndroidClient mqttAndroidClient;
 
-     String serverUri = "tcp://120.76.153.166:1883";
+    String serverUri = "tcp://120.76.153.166:1883";
 
     String clientId = "ExampleAndroidClient";
     final String ShootReady = "ShootReady";
@@ -133,27 +139,30 @@ public class MainActivity extends AppCompatActivity {
     String TrainId;
     String GroupIndex;
     String VideoStreamUrl;
-    boolean isFrist=true;
-    boolean isStart=true;
+    boolean isFrist = true;
+    boolean isStart = true;
     private MediaPlayer mMediaPlayer;
     private Vibrator vibrator;
     private String music = "avchat_ring.mp3";
-    private long[] pattern = { 0, 2000, 1000 };
+    private long[] pattern = {0, 2000, 1000};
     private int clickCount;
+    private String isViSitor;
     private long preClickTime;
-    private boolean isShowRed=true;
-    private boolean isShowRedOpen=true;
-    private boolean IS_RADIO=true;
+    private boolean isShowRed = true;
+    private boolean isShowRedOpen = true;
+    private boolean IS_RADIO = true;
     private ArrayList<String> mMusicList = new ArrayList<>();
     private int mPosition;
     private boolean mIsPlaying = false;
+    private boolean isRestart = false;
+    private boolean isFromViSitor=false;
     List<Integer> listRadio = new ArrayList<Integer>();
 
 
     String sn;
-    int i=0;
+    int i = 0;
     //存放音效的HashMap
-    private Map<Integer,Integer> map = new HashMap<Integer,Integer>();
+    private Map<Integer, Integer> map = new HashMap<Integer, Integer>();
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -165,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
                      获取数据，更新UI
                      */
                     tempList.clear();
-                    SpTools.putStringValue(MainActivity.this,info.getData().getStudentCode(),"");
+                    SpTools.putStringValue(MainActivity.this, info.getData().getStudentCode(), "");
                     shotPoint.setTempShootDetailListBean(tempList);
 
                     mReadyLayout.setBackgroundResource(R.drawable.red_shape);
@@ -183,40 +192,56 @@ public class MainActivity extends AppCompatActivity {
                     //startHeCheng("环");
 
                     if (list != null) {
-                        if(tempList.size()>0){
+                        if (tempList.size() > 0) {
                             shotPoint.setTempShootDetailListBean(tempList);
 
                         }
                         shotPoint.setShootDetailListBean(list);
-                        if(msg.getData()!=null){
-                            if(msg.getData().getInt("ID")==-1){
+                        if (msg.getData() != null) {
+                            if (msg.getData().getInt("ID") == -1) {
                                 return;
                             }
-                            listRadio.add(msg.getData().getInt("ID"));
-                            if(listRadio.size()==1){
-                                if(IS_RADIO){
+                            if (IS_RADIO) {
+                                listRadio.add(msg.getData().getInt("ID"));
+                                if (listRadio.size() == 1) {
                                     playAlarm(msg.getData().getInt("ID"));
+
                                 }
-
                             }
+
                         }
-
-
 
 
                     }
                     break;
                 case 4://结束
-                    mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
-                    mReadyLayout.setClickable(false);
-                    mEndLayout.setBackgroundResource(R.drawable.gray_shape);
-                    mEndLayout.setClickable(false);
+                    if (isViSitor.equals("1")) {
+                        mKaishiTitle.setText("重新");
+                        mShotBtn.setText("开始");
+                        isRestart = true;
+                        info.getData().setStatus(4);
+                        mReadyLayout.setBackgroundResource(R.drawable.red_shape);
+                        mReadyLayout.setClickable(true);
+                    } else {
+                        mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
+                        mReadyLayout.setClickable(false);
+                        mEndLayout.setBackgroundResource(R.drawable.gray_shape);
+                        mEndLayout.setClickable(false);
+                    }
+
                     break;
                 case 5://强制刷新
                     GetTrainStudentDataByGroupId();
                     break;
                 case 6:
-
+                    mKaishiTitle.setText("重新");
+                    mShotBtn.setText("开始");
+                    mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
+                    mReadyLayout.setClickable(false);
+                    mEndLayout.setBackgroundResource(R.drawable.red_shape);
+                    mEndLayout.setClickable(true);
+                    timer.start();
+                    getData();
                     break;
             }
         }
@@ -236,15 +261,25 @@ public class MainActivity extends AppCompatActivity {
 
 
         sn = UUIDS.getUUID();
-        Urls.BASE_URL= (String) SharedPreferencesUtil.get(MainActivity.this,SharedPreferencesUtil.BASE_URL,"");
-        if(TextUtils.isEmpty(Urls.BASE_URL)){
-            startActivity(new Intent(MainActivity.this,ConfigureActivity.class).putExtra("isFromMain",true));
+        Urls.BASE_URL = (String) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.BASE_URL, "");
+        if (TextUtils.isEmpty(Urls.BASE_URL)) {
+            startActivity(new Intent(MainActivity.this, ConfigureActivity.class).putExtra("isFromMain", true));
             finish();
             return;
         }
 
-        isShowRedOpen= (boolean) SharedPreferencesUtil.get(MainActivity.this,SharedPreferencesUtil.IS_RED,true);
-        IS_RADIO= (boolean) SharedPreferencesUtil.get(MainActivity.this,SharedPreferencesUtil.IS_RADIO,true);
+        isShowRedOpen = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.IS_RED, true);
+        isViSitor = (String) SharedPreferencesUtil.get(MainActivity.this, IS_VISITOR, "2");
+        IS_RADIO = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.IS_RADIO, true);
+        mMyOkhttp = new MyOkHttp(okHttpClient);
+        if (isViSitor.equals("1")) {
+            mKaishiTitle.setText("开始");
+            mShotBtn.setText("射击");
+            mRemainingTime.setVisibility(View.GONE);
+            mReadyLayout.setBackgroundResource(R.drawable.red_shape);
+            mReadyLayout.setClickable(true);
+            ChangeMode(false);
+        }
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
 
@@ -260,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
 
         System.out.println("width-display :" + display.getWidth());
         System.out.println("heigth-display :" + display.getHeight());
-        mMyOkhttp = new MyOkHttp(okHttpClient);
+
         shotPoint.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -269,12 +304,12 @@ public class MainActivity extends AppCompatActivity {
                     clickCount++;
                 } else if (clickCount == 1) {
                     long curTime = System.currentTimeMillis();
-                    if((curTime - preClickTime) < 500){
+                    if ((curTime - preClickTime) < 500) {
                         doubleClick();
                     }
                     clickCount = 0;
                     preClickTime = 0;
-                }else{
+                } else {
                     Log.e(TAG, "clickCount = " + clickCount);
                     clickCount = 0;
                     preClickTime = 0;
@@ -288,18 +323,18 @@ public class MainActivity extends AppCompatActivity {
         DeviceIsRegist();
         GetConfigData();
 
-       // getData();
+        // getData();
 
 
-       // map.put(1, soundPool.load(this,R.raw.wrong,1));
+        // map.put(1, soundPool.load(this,R.raw.wrong,1));
         timer = new CountDownTimer(4 * 1000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 // TODO Auto-generated method stub
-                if(millisUntilFinished / 1000==4){
+                if (millisUntilFinished / 1000 == 4) {
                     mKaishi.setVisibility(View.VISIBLE);
                     mNumTv.setVisibility(View.GONE);
-                }else{
+                } else {
                     mKaishi.setVisibility(View.GONE);
                     mNumTv.setVisibility(View.VISIBLE);
                     mNumTv.setText(millisUntilFinished / 1000 + "");
@@ -325,26 +360,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(mMediaPlayer!=null){
+        if (mMediaPlayer != null) {
             mMediaPlayer.release();
-            mMediaPlayer=null;
+            mMediaPlayer = null;
         }
 
 
     }
 
     private void playAlarm(int id) {
-        if(listRadio.size()==0){
+        if (listRadio.size() == 0) {
             return;
         }
-         id=listRadio.get(0);
-		/*
-		 * timerVibrate=new Timer(); timerVibrate.sc
+        id = listRadio.get(0);
+        /*
+         * timerVibrate=new Timer(); timerVibrate.sc
 		 */
        /* vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         vibrator.vibrate(pattern, 0);*/
@@ -362,11 +395,11 @@ public class MainActivity extends AppCompatActivity {
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
-                 if(listRadio.size()>0){
-                     listRadio.remove(0);
+                if (listRadio.size() > 0) {
+                    listRadio.remove(0);
                     playAlarm(2);
 
-                 }
+                }
             }
         });
         // mMediaPlayer = new MediaPlayer();
@@ -383,39 +416,39 @@ public class MainActivity extends AppCompatActivity {
 			}*//*
 		}*/
         int fd = 0;
-        switch (id){
+        switch (id) {
             case 0:
-                fd=R.raw.f0;
+                fd = R.raw.f0;
                 break;
-            case  1:
-                fd=R.raw.f1;
+            case 1:
+                fd = R.raw.f1;
                 break;
-            case  2:
-                fd=R.raw.f2;
+            case 2:
+                fd = R.raw.f2;
                 break;
-            case  3:
-                fd=R.raw.f3;
+            case 3:
+                fd = R.raw.f3;
                 break;
-            case  4:
-                fd=R.raw.f4;
+            case 4:
+                fd = R.raw.f4;
                 break;
-            case  5:
-                fd=R.raw.f5;
+            case 5:
+                fd = R.raw.f5;
                 break;
-            case  6:
-                fd=R.raw.f6;
+            case 6:
+                fd = R.raw.f6;
                 break;
-            case  7:
-                fd=R.raw.f7;
+            case 7:
+                fd = R.raw.f7;
                 break;
-            case  8:
-                fd=R.raw.f8;
+            case 8:
+                fd = R.raw.f8;
                 break;
-            case  9:
-                fd=R.raw.f9;
+            case 9:
+                fd = R.raw.f9;
                 break;
-            case  10:
-                fd=R.raw.f10;
+            case 10:
+                fd = R.raw.f10;
                 break;
 
         }
@@ -432,7 +465,7 @@ public class MainActivity extends AppCompatActivity {
             }
             getSystemService(AUDIO_SERVICE);
             mMediaPlayer.setVolume(0.5f, 0.5f);
-           // mMediaPlayer.setLooping(true);
+            // mMediaPlayer.setLooping(true);
             mMediaPlayer.start();
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -516,8 +549,9 @@ public class MainActivity extends AppCompatActivity {
      * 获取数据
      */
     private void getData() {
-        mMyOkhttp.get().url(Urls.BASE_URL+Urls.GetTrainStudentData)
+        mMyOkhttp.get().url(Urls.BASE_URL + Urls.GetTrainStudentData)
                 .addParam("padCode", sn)
+                .addParam("isGuest", isViSitor)
                 .tag(this)
                 .enqueue(new JsonResponseHandler() {
                     @Override
@@ -537,24 +571,30 @@ public class MainActivity extends AppCompatActivity {
                         mBencisheji.setText(data.getCurrScore() + "");
 
                         mZongchengji.setText(data.getTotalScore() + "");
-                        if(data.getShootDetailList()==null||data.getShootDetailList().size()==0){
-                            mShengyuzidan.setText( "0");
-                        }else{
-                            mShengyuzidan.setText(data.getShootDetailList().get(data.getShootDetailList().size()-1).getBulletIndex()+"");
+                        if (data.getShootDetailList() == null || data.getShootDetailList().size() == 0) {
+                            mShengyuzidan.setText("0");
+                        } else {
+                            mShengyuzidan.setText(data.getShootDetailList().get(data.getShootDetailList().size() - 1).getBulletIndex() + "");
 
                         }
                         mShengyushijian.setText(data.getRemainTime());
-                        if(isFrist){
-                            setVideoUri();
+                        if (isFrist) {
+                            if(!isFromViSitor){
+                                setVideoUri();
+                            }
+
                             list = data.getShootDetailList();
-                            String temp=SpTools.getStringValue(MainActivity.this,info.getData().getStudentCode(),"");
-                            if(!TextUtils.isEmpty(temp)){
-                                Gson gson=new Gson();
+                            String temp = SpTools.getStringValue(MainActivity.this, info.getData().getStudentCode(), "");
+                            if (!TextUtils.isEmpty(temp)) {
+                                Gson gson = new Gson();
                                 tempList = gson.fromJson(temp,
                                         new TypeToken<List<Info.DataBean.ShootDetailListBean>>() {
                                         }.getType());
                                 shotPoint.setTempShootDetailListBean(tempList);
 
+                            }else{
+                                tempList = new ArrayList<Info.DataBean.ShootDetailListBean>();
+                                shotPoint.setTempShootDetailListBean(tempList);
                             }
                             if (list != null) {
                                 shotPoint.setShootDetailListBean(list);
@@ -562,13 +602,16 @@ public class MainActivity extends AppCompatActivity {
                                 list = new ArrayList<Info.DataBean.ShootDetailListBean>();
                                 shotPoint.setShootDetailListBean(list);
                             }
-                            isFrist=false;
+                            isFrist = false;
                         }
                         if (info.getData().getStatus() == 0 || info.getData().getStatus() == 2 || info.getData().getStatus() == 4) {
-                            mReadyLayout.setClickable(false);
-                            mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
-                            mEndLayout.setBackgroundResource(R.drawable.gray_shape);
-                            mEndLayout.setClickable(false);
+                            if (!isViSitor.equals("1")) {
+                                mReadyLayout.setClickable(false);
+                                mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
+                                mEndLayout.setBackgroundResource(R.drawable.gray_shape);
+                                mEndLayout.setClickable(false);
+                            }
+
                         } else if (info.getData().getStatus() == 1) {
                             mReadyLayout.setClickable(true);
                             mReadyLayout.setBackgroundResource(R.drawable.red_shape);
@@ -596,20 +639,21 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
+
     /**
      * 获取配置
      */
     private void GetConfigData() {
-        mMyOkhttp.get().url(Urls.BASE_URL+Urls.GetConfigData)
+        mMyOkhttp.get().url(Urls.BASE_URL + Urls.GetConfigData)
                 .tag(this)
                 .enqueue(new JsonResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, JSONObject response) {
                         try {
-                            JSONObject object=  response.getJSONObject("Data");
-                            String MqttServerIP=object.getString("MqttServerIP");
-                            String MqttPort=object.getString("MqttPort");
-                            serverUri="tcp://"+MqttServerIP+":"+MqttPort;
+                            JSONObject object = response.getJSONObject("Data");
+                            String MqttServerIP = object.getString("MqttServerIP");
+                            String MqttPort = object.getString("MqttPort");
+                            serverUri = "tcp://" + MqttServerIP + ":" + MqttPort;
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -629,12 +673,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
+
     /**
      * 获取数据
      */
     private void DeviceIsRegist() {
 
-        mMyOkhttp.get().url(Urls.BASE_URL+Urls.DeviceIsRegist)
+        mMyOkhttp.get().url(Urls.BASE_URL + Urls.DeviceIsRegist)
                 .addParam("type", "1")
                 .addParam("code", sn)
                 .tag(this)
@@ -643,12 +688,12 @@ public class MainActivity extends AppCompatActivity {
                     public void onSuccess(int statusCode, JSONObject response) {
                         Log.d(TAG, "doPost onSuccess JSONObject:" + response);
                         try {
-                            JSONObject object=  response.getJSONObject("Data");
-                            boolean Data=object.getBoolean("IsRegist");
-                            if(!Data){
-                                startActivity(new Intent(MainActivity.this,RegisterActivity.class));
+                            JSONObject object = response.getJSONObject("Data");
+                            boolean Data = object.getBoolean("IsRegist");
+                            if (!Data) {
+                                startActivity(new Intent(MainActivity.this, RegisterActivity.class));
                                 finish();
-                            }else{
+                            } else {
                                 getData();
                             }
                         } catch (JSONException e) {
@@ -675,18 +720,19 @@ public class MainActivity extends AppCompatActivity {
      * 获取数据
      */
     private void GetTrainStudentDataByGroupId() {
-        mMyOkhttp.get().url(Urls.BASE_URL+Urls.GetTrainStudentDataByGroupId)
+        mMyOkhttp.get().url(Urls.BASE_URL + Urls.GetTrainStudentDataByGroupId)
                 .addParam("trainId", TrainId + "")
                 .addParam("groupIndex", GroupIndex + "")
                 .addParam("padCode", sn)
+                .addParam("isGuest", isViSitor)
                 .tag(this)
                 .enqueue(new JsonResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, JSONObject response) {
                         Log.d(TAG, "doPost onSuccess JSONObject:" + response);
                         boolean isNull = false;
-                        if(info==null||info.getData()==null){
-                            isNull=true;
+                        if (info == null || info.getData() == null) {
+                            isNull = true;
                         }
                         info = new Gson().fromJson(response.toString(), Info.class);
                         Info.DataBean data = info.getData();
@@ -695,26 +741,26 @@ public class MainActivity extends AppCompatActivity {
                         mXuehao.setText("学号 ：" + data.getStudentCode() + "");
                         mKemu.setText("科目 ：" + data.getShootModeName() + "");
                         mBencisheji.setText(data.getCurrScore() + "");
-                        if(data.getShootDetailList()==null||data.getShootDetailList().size()==0){
-                            mShengyuzidan.setText( "0");
-                        }else{
-                            mShengyuzidan.setText(data.getShootDetailList().get(data.getShootDetailList().size()-1).getBulletIndex()+"");
+                        if (data.getShootDetailList() == null || data.getShootDetailList().size() == 0) {
+                            mShengyuzidan.setText("0");
+                        } else {
+                            mShengyuzidan.setText(data.getShootDetailList().get(data.getShootDetailList().size() - 1).getBulletIndex() + "");
 
                         }
                         mZongchengji.setText(data.getTotalScore() + "");
                         mShengyushijian.setText(data.getRemainTime());
-                        if(isNull){
+                        if (isNull) {
                             setVideoUri();
                         }
-                        String temp=SpTools.getStringValue(MainActivity.this,info.getData().getStudentCode(),"");
-                        if(!TextUtils.isEmpty(temp)){
-                            Gson gson=new Gson();
+                        String temp = SpTools.getStringValue(MainActivity.this, info.getData().getStudentCode(), "");
+                        if (!TextUtils.isEmpty(temp)) {
+                            Gson gson = new Gson();
                             tempList = gson.fromJson(temp,
                                     new TypeToken<List<Info.DataBean.ShootDetailListBean>>() {
                                     }.getType());
                             shotPoint.setTempShootDetailListBean(tempList);
 
-                        }else{
+                        } else {
                             tempList.clear();
                             shotPoint.setTempShootDetailListBean(tempList);
                         }
@@ -759,10 +805,10 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void publishMessageDialog(String message){
+    private void publishMessageDialog(String message) {
         View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_not_login, null);
-        TextView textView= (TextView) view.findViewById(R.id.title_text);
-        TextView okText= (TextView) view.findViewById(R.id.btn_ok);
+        TextView textView = (TextView) view.findViewById(R.id.title_text);
+        TextView okText = (TextView) view.findViewById(R.id.btn_ok);
         textView.setText(message);
         okText.setText("好的");
         view.findViewById(R.id.btn_cancel).setVisibility(View.GONE);
@@ -790,9 +836,10 @@ public class MainActivity extends AppCompatActivity {
      * @param studentId
      */
     private void startShot(final String trainId, String studentId) {
-        mMyOkhttp.get().url(Urls.BASE_URL+Urls.StartShoot)
+        mMyOkhttp.get().url(Urls.BASE_URL + Urls.StartShoot)
                 .addParam("trainId", trainId)
                 .addParam("studentId", studentId)
+                .addParam("isGuest", isViSitor)
                 .tag(this)
                 .enqueue(new JsonResponseHandler() {
                     @Override
@@ -827,15 +874,65 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * 切换模式
+     *
+     * @param trainId
+     * @param studentId
+     */
+    private void ChangeMode(final boolean isNotify) {
+        mMyOkhttp.get().url(Urls.BASE_URL + Urls.ChangeMode)
+                .addParam("padCode", sn)
+                .addParam("type", isViSitor)
+                .tag(this)
+                .enqueue(new JsonResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, JSONObject response) {
+                        Log.d(TAG, "doPost onSuccess JSONObject:" + response);
+                        try {
+                            if (response.getBoolean("Success")) {
+                                if (isNotify) {
+                                    isFrist = true;
+                                    mKaishiTitle.setText("开始");
+                                    mShotBtn.setText("射击");
+                                    mReadyLayout.setBackgroundResource(R.drawable.red_shape);
+                                    mReadyLayout.setClickable(true);
+                                    getData();
+                                    GetConfigData();
+                                }
+
+
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                    @Override
+                    public void onSuccess(int statusCode, JSONArray response) {
+                        Log.d(TAG, "doPost onSuccess JSONArray:" + response);
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, String error_msg) {
+                        Log.d(TAG, "doPost onFailure:" + error_msg);
+                        // ToastUtil.showShort(BaseApplication.context,error_msg);
+                    }
+                });
+    }
+
+    /**
      * 结束射击
      *
      * @param trainId
      * @param studentId
      */
     private void endShot(String trainId, String studentId) {
-        mMyOkhttp.get().url(Urls.BASE_URL+Urls.EndShoot)
+        mMyOkhttp.get().url(Urls.BASE_URL + Urls.EndShoot)
                 .addParam("trainId", trainId)
                 .addParam("studentId", studentId)
+                .addParam("isGuest", isViSitor)
                 .tag(this)
                 .enqueue(new JsonResponseHandler() {
                     @Override
@@ -947,14 +1044,14 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject object = new JSONObject(new String(message.getPayload()));
                     if (object.has("Type")) {
                         String type = object.getString("Type");
-                        if(info==null||info.getData()==null){
+                        if (info == null || info.getData() == null) {
                             return;
                         }
-                        if(info.getData().getStatus() ==1||info.getData().getStatus() ==2){
+                        if (info.getData().getStatus() == 1 || info.getData().getStatus() == 2) {
                             if (type.equals("Complete")) {
                                 String TargetId = object.getString("TargetId");
 
-                                if (TargetId.equals(info.getData().getTargetId()+"")) {
+                                if (TargetId.equals(info.getData().getTargetId() + "")) {
 
                                     Info.DataBean.ShootDetailListBean bean = new Info.DataBean.ShootDetailListBean();
                                     boolean isHas = false;
@@ -974,9 +1071,9 @@ public class MainActivity extends AppCompatActivity {
                                     bean.setHeight(object.getInt("Height"));
                                     bean.setScore(object.getInt("Score"));
                                     tempList.add(bean);
-                                    Gson gson=new Gson();
-                                    String a=gson.toJson(tempList);
-                                    SpTools.putStringValue(MainActivity.this,info.getData().getStudentCode(),a);
+                                    Gson gson = new Gson();
+                                    String a = gson.toJson(tempList);
+                                    SpTools.putStringValue(MainActivity.this, info.getData().getStudentCode(), a);
                                     Message msg = handler.obtainMessage();
                                     Bundle b = new Bundle();
                                     b.putInt("ID", -1);
@@ -989,11 +1086,11 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             }
 
-                        }else if(info.getData().getStatus() == 3){
+                        } else if (info.getData().getStatus() == 3) {
                             if (type.equals("Complete")) {
                                 String TargetId = object.getString("TargetId");
 
-                                if (TargetId.equals(info.getData().getTargetId()+"")) {
+                                if (TargetId.equals(info.getData().getTargetId() + "")) {
 
                                     Info.DataBean.ShootDetailListBean bean = new Info.DataBean.ShootDetailListBean();
                                     boolean isHas = false;
@@ -1067,15 +1164,24 @@ public class MainActivity extends AppCompatActivity {
                         if ("End".equals(type)) {
                             String TargetId = object.getString("TargetId");
                             if (info != null && info.getData() != null) {
-                                if (TargetId.equals(info.getData().getTargetId()+"")) {
-                                    handler.sendEmptyMessage(4);
+                                if (TargetId.equals(info.getData().getTargetId() + "")) {
+
+                                    handler.sendEmptyMessageDelayed(4,500);
                                 }
                             }
+                        } else if ("Ready".equals(type)) {
+                            if (object.has("IsGuest")) {
+                                int IsGuest = object.getInt("IsGuest");
+                                if (IsGuest == 1) {
+                                    handler.sendEmptyMessage(6);
 
-
+                                }
+                            }
                         }
 
+
                     }
+
                     System.out.println("Message: " + topic + " : " + new String(message.getPayload()));
                 }
             });
@@ -1139,10 +1245,10 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             MqttMessage message = new MqttMessage();
-            Heartbeat heartbeat=new Heartbeat();
+            Heartbeat heartbeat = new Heartbeat();
             heartbeat.setCode(sn);
             heartbeat.setType("Pad");
-            Gson gson=new Gson();
+            Gson gson = new Gson();
 
             message.setPayload(gson.toJson(heartbeat).getBytes());
             mqttAndroidClient.publish("Heartbeat", message);
@@ -1184,33 +1290,74 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
     private void doubleClick() {
         Log.i(TAG, "double click");
         //if(isShowRedOpen){
-            isShowRed=!isShowRed;
-            shotPoint.setShowAll(isShowRed);
+        isShowRed = !isShowRed;
+        shotPoint.setShowAll(isShowRed);
         //}
 
     }
 
-    @OnClick({R.id.ready_layout, R.id.end_layout,R.id.sheshouxinxi})
-    public void onClick(View view) {        switch (view.getId()) {
+    @OnClick({R.id.ready_layout, R.id.end_layout, R.id.sheshouxinxi})
+    public void onClick(View view) {
+        switch (view.getId()) {
             case R.id.ready_layout:
                 //playAlarm();
-               // sendBroadcast(Constants.ACTION_PLAY);
-                if (info != null && info.getData() != null) {
-                    startShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
+                // sendBroadcast(Constants.ACTION_PLAY);
+                if (isViSitor.equals("1")) {
+                    if (isRestart) {
+                        isFromViSitor=true;
+                        ChangeMode(true);
+                        isRestart = false;
+                    } else {
+                        if (info != null && info.getData() != null) {
+                            startShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
+                        }
+                    }
+                } else {
+                    if (info != null && info.getData() != null) {
+                        startShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
+                    }
                 }
+
                 break;
             case R.id.end_layout:
-                if (info != null &&info.getData() == null) {
+                if (info != null && info.getData() == null) {
                     return;
                 }
                 endShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
                 break;
             case R.id.sheshouxinxi:
-                startActivity(new Intent(MainActivity.this,ConfigureActivity.class));
+                startActivityForResult(new Intent(MainActivity.this, ConfigureActivity.class), 0);
                 break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            isShowRedOpen = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.IS_RED, true);
+            isViSitor = (String) SharedPreferencesUtil.get(MainActivity.this, IS_VISITOR, "2");
+            IS_RADIO = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.IS_RADIO, true);
+            isFromViSitor=true;
+            shotPoint.setShowRed(isShowRedOpen);
+            if (isViSitor.equals("1")) {
+                mKaishiTitle.setText("开始");
+                mShotBtn.setText("射击");
+                mRemainingTime.setVisibility(View.GONE);
+                mReadyLayout.setBackgroundResource(R.drawable.red_shape);
+                mReadyLayout.setClickable(true);
+
+                ChangeMode(true);
+            }else{
+                mRemainingTime.setVisibility(View.VISIBLE);
+
+                ChangeMode(true);
+            }
+
         }
     }
 }

@@ -8,9 +8,14 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.tsy.sdk.myokhttp.MyOkHttp;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
+
+import static com.longke.shot.SharedPreferencesUtil.IS_RADIO;
+import static com.longke.shot.SharedPreferencesUtil.IS_VISITOR;
 
 public class ConfigureActivity extends AppCompatActivity {
 
@@ -24,6 +29,8 @@ public class ConfigureActivity extends AppCompatActivity {
     Button btQueding;
     @InjectView(R.id.isRadio)
     CheckBox isRadio;
+    @InjectView(R.id.isVisitor)
+    CheckBox mIsVisitor;
     private boolean isFromMain;
 
     @Override
@@ -33,16 +40,35 @@ public class ConfigureActivity extends AppCompatActivity {
         ButterKnife.inject(this);
         isFromMain = getIntent().getBooleanExtra("isFromMain", false);
         urlName.setText("http://120.76.153.166:6002");
+        String isViSitor = (String) SharedPreferencesUtil.get(ConfigureActivity.this, IS_VISITOR, "2");
+        boolean IS_RADIO = (boolean) SharedPreferencesUtil.get(ConfigureActivity.this, SharedPreferencesUtil.IS_RADIO, true);
+        boolean isShowRedOpen = (boolean) SharedPreferencesUtil.get(ConfigureActivity.this, SharedPreferencesUtil.IS_RED, true);
+        isRadio.setChecked(IS_RADIO);
+        isRed.setChecked(isShowRedOpen);
+        if (isViSitor.equals("1")) {
+            mIsVisitor.setChecked(true);
+        }else{
+            mIsVisitor.setChecked(false);
+        }
     }
 
     @OnClick(R.id.bt_queding)
     public void onViewClicked() {
         SharedPreferencesUtil.put(ConfigureActivity.this, SharedPreferencesUtil.BASE_URL, urlName.getText().toString());
         SharedPreferencesUtil.put(ConfigureActivity.this, SharedPreferencesUtil.IS_RED, isRed.isChecked());
-        SharedPreferencesUtil.put(ConfigureActivity.this, SharedPreferencesUtil.IS_RADIO, isRadio.isChecked());
+        SharedPreferencesUtil.put(ConfigureActivity.this, IS_RADIO, isRadio.isChecked());
+        if(mIsVisitor.isChecked()){
+            SharedPreferencesUtil.put(ConfigureActivity.this, SharedPreferencesUtil.IS_VISITOR, "1");
+        }else{
+            SharedPreferencesUtil.put(ConfigureActivity.this, SharedPreferencesUtil.IS_VISITOR,"2");
+        }
+
         if (isFromMain) {
             startActivity(new Intent(ConfigureActivity.this, MainActivity.class));
+        }else{
+            setResult(RESULT_OK);
         }
+
         finish();
 
     }
