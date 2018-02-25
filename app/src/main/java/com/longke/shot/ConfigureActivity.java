@@ -16,7 +16,6 @@ public class ConfigureActivity extends AppCompatActivity {
 
     @InjectView(R.id.addrss_name_tv)
     TextView addrssNameTv;
-
     @InjectView(R.id.url_name)
     EditText urlName;
     @InjectView(R.id.isRed)
