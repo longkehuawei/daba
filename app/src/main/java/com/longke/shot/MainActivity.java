@@ -345,7 +345,12 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFinish() {
+
                 mNumLayout.setVisibility(View.GONE);
+                if (isViSitor.equals("1")) {
+                    GuestRealBeginShoot();
+                }
+
             }
         };
         timer1.schedule(new TimerTask() {
@@ -876,8 +881,6 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 切换模式
      *
-     * @param trainId
-     * @param studentId
      */
     private void ChangeMode(final boolean isNotify) {
         mMyOkhttp.get().url(Urls.BASE_URL + Urls.ChangeMode)
@@ -905,6 +908,33 @@ public class MainActivity extends AppCompatActivity {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+
+
+                    }
+
+                    @Override
+                    public void onSuccess(int statusCode, JSONArray response) {
+                        Log.d(TAG, "doPost onSuccess JSONArray:" + response);
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, String error_msg) {
+                        Log.d(TAG, "doPost onFailure:" + error_msg);
+                        // ToastUtil.showShort(BaseApplication.context,error_msg);
+                    }
+                });
+    }
+    /**
+     * 游客模式模式开始射击倒计时
+     */
+    private void GuestRealBeginShoot() {
+        mMyOkhttp.get().url(Urls.BASE_URL + Urls.GuestRealBeginShoot)
+                .addParam("studentId", info.getData().getStudentId()+"")
+                .tag(this)
+                .enqueue(new JsonResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, JSONObject response) {
+
 
 
                     }
@@ -1174,6 +1204,14 @@ public class MainActivity extends AppCompatActivity {
                                 int IsGuest = object.getInt("IsGuest");
                                 if (IsGuest == 1) {
                                     handler.sendEmptyMessage(6);
+
+                                }
+                            }
+                        }else  if("Start".equals(type)){
+                            if (object.has("IsGuest")) {
+                                int IsGuest = object.getInt("IsGuest");
+                                if (IsGuest == 1) {
+                                   info.getData().setStatus(3);
 
                                 }
                             }
