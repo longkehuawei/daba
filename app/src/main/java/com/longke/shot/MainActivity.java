@@ -123,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
     final String ShootReady = "ShootReady";
     final String CompleteNotice = "CompleteNotice";
     final String Shoot = "Shoot";
+    final String Shutdown = "Shutdown";
     final String InitData = "InitData";
     final String publishMessage = "{\"Type\":\"Ready\",\"TargetId\":11}";
     OkHttpClient okHttpClient = new OkHttpClient.Builder()
@@ -537,6 +538,7 @@ public class MainActivity extends AppCompatActivity {
                     subscribeToTopic();
                     subscribeToTopic1();
                     subscribeToTopic2();//shot
+                    subscribeToTopic3();//shot
                     InitData();//强制刷新
                 }
 
@@ -1191,6 +1193,48 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject object = new JSONObject(new String(message.getPayload()));
                     if (object.has("Type")) {
                         String type = object.getString("Type");
+                        if ("Off".equals(type)) {
+
+                        }
+
+
+                    }
+
+                    System.out.println("Message: " + topic + " : " + new String(message.getPayload()));
+                }
+            });
+
+        } catch (MqttException ex) {
+            System.err.println("Exception whilst subscribing");
+            ex.printStackTrace();
+        }
+    }
+    /**
+     * 关机
+     */
+    public void subscribeToTopic3() {
+        try {
+            mqttAndroidClient.subscribe(Shutdown, 2, null, new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    Log.e("longke", "Subscribed!");
+                    //addToHistory("Subscribed!");
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    Log.e("longke", "Failed to subscribe");
+                    // addToHistory("Failed to subscribe");
+                }
+            });
+
+            // THIS DOES NOT WORK!
+            mqttAndroidClient.subscribe(Shutdown, 2, new IMqttMessageListener() {
+                @Override
+                public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    JSONObject object = new JSONObject(new String(message.getPayload()));
+                    if (object.has("Type")) {
+                        String type = object.getString("Type");
                         if ("End".equals(type)) {
                             String TargetId = object.getString("TargetId");
                             if (info != null && info.getData() != null) {
@@ -1368,6 +1412,14 @@ public class MainActivity extends AppCompatActivity {
                 endShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
                 break;
             case R.id.sheshouxinxi:
+               /* try{
+                    Log.v(TAG, "root Runtime->shutdown");
+                    //Process proc =Runtime.getRuntime().exec(new String[]{"su","-c","shutdown"});  //关机
+                    Process proc =Runtime.getRuntime().exec(new String[]{"su","-c","poweroff -f"});  //关机
+                    proc.waitFor();
+                }catch(Exception e){
+                    e.printStackTrace();
+                }*/
                 startActivityForResult(new Intent(MainActivity.this, ConfigureActivity.class), 0);
                 break;
         }
