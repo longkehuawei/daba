@@ -5,6 +5,7 @@ buildscript {
         jcenter()
         maven {
             url "https://repo.eclipse.org/content/repositories/paho-snapshots/"
+
         }
     }
     dependencies {
@@ -17,6 +18,7 @@ buildscript {
 
 allprojects {
     repositories {
+
         jcenter()
     }
 }

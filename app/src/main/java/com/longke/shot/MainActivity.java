@@ -4,6 +4,7 @@ package com.longke.shot;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,9 +18,12 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -110,6 +114,10 @@ public class MainActivity extends AppCompatActivity {
     RelativeLayout mActivityMain;
     @InjectView(R.id.remaining_time)
     LinearLayout mRemainingTime;
+    @InjectView(R.id.qiehuan)
+    ImageView mQiehuan;
+    @InjectView(R.id.title_tv)
+    TextView mTitleTv;
     private IjkVideoView mVideoView;
     private PointView shotPoint;
     private int mDuration;
@@ -156,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
     private int mPosition;
     private boolean mIsPlaying = false;
     private boolean isRestart = false;
-    private boolean isFromViSitor=false;
+    private boolean isFromViSitor = false;
     List<Integer> listRadio = new ArrayList<Integer>();
 
 
@@ -178,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
                     SpTools.putStringValue(MainActivity.this, info.getData().getStudentCode(), "");
                     shotPoint.setTempShootDetailListBean(tempList);
 
-                    mReadyLayout.setBackgroundResource(R.drawable.red_shape);
+                    mReadyLayout.setBackgroundResource(R.mipmap.btn01);
                     mReadyLayout.setClickable(true);
                     mEndLayout.setBackgroundResource(R.drawable.gray_shape);
                     break;
@@ -220,8 +228,9 @@ public class MainActivity extends AppCompatActivity {
                         mKaishiTitle.setText("重新");
                         mShotBtn.setText("开始");
                         isRestart = true;
-                        info.getData().setStatus(4);
-                        mReadyLayout.setBackgroundResource(R.drawable.red_shape);
+                        getData();
+                        //info.getData().setStatus(4);
+                        mReadyLayout.setBackgroundResource(R.mipmap.btn01);;
                         mReadyLayout.setClickable(true);
                     } else {
                         mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
@@ -239,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
                     mShotBtn.setText("开始");
                     mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
                     mReadyLayout.setClickable(false);
-                    mEndLayout.setBackgroundResource(R.drawable.red_shape);
+                    mEndLayout.setBackgroundResource(R.mipmap.btn02);
                     mEndLayout.setClickable(true);
                     timer.start();
                     getData();
@@ -249,6 +258,9 @@ public class MainActivity extends AppCompatActivity {
     };
 
     Timer timer1 = new Timer();
+    Timer timer2 = new Timer();
+    private PopupWindow popupWindow;
+    private View contentView;
 
 
     @Override
@@ -276,10 +288,13 @@ public class MainActivity extends AppCompatActivity {
         if (isViSitor.equals("1")) {
             mKaishiTitle.setText("开始");
             mShotBtn.setText("射击");
+            mTitleTv.setText("自由模式");
             mRemainingTime.setVisibility(View.GONE);
-            mReadyLayout.setBackgroundResource(R.drawable.red_shape);
+            mReadyLayout.setBackgroundResource(R.mipmap.btn01);;
             mReadyLayout.setClickable(true);
             ChangeMode(false);
+        }else{
+            mTitleTv.setText("考核模式");
         }
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -362,6 +377,14 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }, 30000, 30000);
+        timer1.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+                GetUseTime();
+
+            }
+        }, 10000, 1000);
 
     }
 
@@ -389,7 +412,7 @@ public class MainActivity extends AppCompatActivity {
         vibrator.vibrate(pattern, 0);*/
 
 		/*
-		 * Uri alert = RingtoneManager
+         * Uri alert = RingtoneManager
 		 * .getDefaultUri(RingtoneManager.TYPE_RINGTONE);
 		 */
         if (mMediaPlayer == null) {
@@ -410,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
         });
         // mMediaPlayer = new MediaPlayer();
         // mMediaPlayer.setDataSource(getApplicationContext(), alert);
-		/*if (alert == null) {
+        /*if (alert == null) {
 			music = "bugu.mp3";
 		} else {
 			*//*if ("0".equals(alert.getAlertmusic())) {
@@ -584,9 +607,9 @@ public class MainActivity extends AppCompatActivity {
                             mShengyuzidan.setText(data.getShootDetailList().get(data.getShootDetailList().size() - 1).getBulletIndex() + "");
 
                         }
-                        mShengyushijian.setText(data.getRemainTime());
+                       // mShengyushijian.setText(data.getRemainTime());
                         if (isFrist) {
-                            if(!isFromViSitor){
+                            if (!isFromViSitor) {
                                 setVideoUri();
                             }
 
@@ -599,7 +622,7 @@ public class MainActivity extends AppCompatActivity {
                                         }.getType());
                                 shotPoint.setTempShootDetailListBean(tempList);
 
-                            }else{
+                            } else {
                                 tempList = new ArrayList<Info.DataBean.ShootDetailListBean>();
                                 shotPoint.setTempShootDetailListBean(tempList);
                             }
@@ -621,13 +644,13 @@ public class MainActivity extends AppCompatActivity {
 
                         } else if (info.getData().getStatus() == 1) {
                             mReadyLayout.setClickable(true);
-                            mReadyLayout.setBackgroundResource(R.drawable.red_shape);
+                            mReadyLayout.setBackgroundResource(R.mipmap.btn01);;
                             mEndLayout.setBackgroundResource(R.drawable.gray_shape);
                             mEndLayout.setClickable(false);
                         } else if (info.getData().getStatus() == 3) {
                             mReadyLayout.setClickable(false);
                             mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
-                            mEndLayout.setBackgroundResource(R.drawable.red_shape);
+                            mEndLayout.setBackgroundResource(R.mipmap.btn02);
                             mEndLayout.setClickable(true);
                         }
 
@@ -755,7 +778,7 @@ public class MainActivity extends AppCompatActivity {
 
                         }
                         mZongchengji.setText(data.getTotalScore() + "");
-                        mShengyushijian.setText(data.getRemainTime());
+                       // mShengyushijian.setText(data.getRemainTime());
                         if (isNull) {
                             setVideoUri();
                         }
@@ -786,13 +809,13 @@ public class MainActivity extends AppCompatActivity {
                             mEndLayout.setClickable(false);
                         } else if (info.getData().getStatus() == 1) {
                             mReadyLayout.setClickable(true);
-                            mReadyLayout.setBackgroundResource(R.drawable.red_shape);
+                            mReadyLayout.setBackgroundResource(R.mipmap.btn01);;
                             mEndLayout.setBackgroundResource(R.drawable.gray_shape);
                             mEndLayout.setClickable(false);
                         } else if (info.getData().getStatus() == 3) {
                             mReadyLayout.setClickable(false);
                             mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
-                            mEndLayout.setBackgroundResource(R.drawable.red_shape);
+                            mEndLayout.setBackgroundResource(R.mipmap.btn02);
                             mEndLayout.setClickable(true);
                         }
 
@@ -856,7 +879,7 @@ public class MainActivity extends AppCompatActivity {
                             if (response.getBoolean("Success")) {
                                 mReadyLayout.setClickable(false);
                                 mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
-                                mEndLayout.setBackgroundResource(R.drawable.red_shape);
+                                mEndLayout.setBackgroundResource(R.mipmap.btn02);
                                 mEndLayout.setClickable(true);
                                 Toast.makeText(MainActivity.this, "准备射击", Toast.LENGTH_SHORT).show();
                             }
@@ -882,7 +905,6 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 切换模式
-     *
      */
     private void ChangeMode(final boolean isNotify) {
         mMyOkhttp.get().url(Urls.BASE_URL + Urls.ChangeMode)
@@ -899,7 +921,7 @@ public class MainActivity extends AppCompatActivity {
                                     isFrist = true;
                                     mKaishiTitle.setText("开始");
                                     mShotBtn.setText("射击");
-                                    mReadyLayout.setBackgroundResource(R.drawable.red_shape);
+                                    mReadyLayout.setBackgroundResource(R.mipmap.btn01);;
                                     mReadyLayout.setClickable(true);
                                     getData();
                                     GetConfigData();
@@ -927,16 +949,54 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
     /**
-     * 游客模式模式开始射击倒计时
+     * 切换模式
      */
-    private void GuestRealBeginShoot() {
-        mMyOkhttp.get().url(Urls.BASE_URL + Urls.GuestRealBeginShoot)
-                .addParam("studentId", info.getData().getStudentId()+"")
+    private void GetUseTime() {
+        mMyOkhttp.get().url(Urls.BASE_URL + Urls.GetUseTime)
+                .addParam("padCode", sn)
+                .addParam("type", isViSitor)
                 .tag(this)
                 .enqueue(new JsonResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, JSONObject response) {
+                        Log.d(TAG, "doPost onSuccess JSONObject:" + response);
+                        try {
+                            if (response.getBoolean("Success")) {
 
+                                String Message= response.getString("Message");
+                                mShengyushijian.setText(Message);
+
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                    @Override
+                    public void onSuccess(int statusCode, JSONArray response) {
+                        Log.d(TAG, "doPost onSuccess JSONArray:" + response);
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, String error_msg) {
+                        Log.d(TAG, "doPost onFailure:" + error_msg);
+                        // ToastUtil.showShort(BaseApplication.context,error_msg);
+                    }
+                });
+    }
+
+    /**
+     * 游客模式模式开始射击倒计时
+     */
+    private void GuestRealBeginShoot() {
+        mMyOkhttp.get().url(Urls.BASE_URL + Urls.GuestRealBeginShoot)
+                .addParam("studentId", info.getData().getStudentId() + "")
+                .tag(this)
+                .enqueue(new JsonResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, JSONObject response) {
 
 
                     }
@@ -1209,6 +1269,7 @@ public class MainActivity extends AppCompatActivity {
             ex.printStackTrace();
         }
     }
+
     /**
      * 关机
      */
@@ -1240,7 +1301,7 @@ public class MainActivity extends AppCompatActivity {
                             if (info != null && info.getData() != null) {
                                 if (TargetId.equals(info.getData().getTargetId() + "")) {
 
-                                    handler.sendEmptyMessageDelayed(4,500);
+                                    handler.sendEmptyMessageDelayed(4, 500);
                                 }
                             }
                         } else if ("Ready".equals(type)) {
@@ -1251,11 +1312,12 @@ public class MainActivity extends AppCompatActivity {
 
                                 }
                             }
-                        }else  if("Start".equals(type)){
+                        } else if ("Start".equals(type)) {
                             if (object.has("IsGuest")) {
                                 int IsGuest = object.getInt("IsGuest");
                                 if (IsGuest == 1) {
-                                   info.getData().setStatus(3);
+                                    getData();
+                                    //info.getData().setStatus(3);
 
                                 }
                             }
@@ -1382,7 +1444,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @OnClick({R.id.ready_layout, R.id.end_layout, R.id.sheshouxinxi})
+    @OnClick({R.id.ready_layout, R.id.end_layout, R.id.sheshouxinxi, R.id.qiehuan})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ready_layout:
@@ -1390,7 +1452,7 @@ public class MainActivity extends AppCompatActivity {
                 // sendBroadcast(Constants.ACTION_PLAY);
                 if (isViSitor.equals("1")) {
                     if (isRestart) {
-                        isFromViSitor=true;
+                        isFromViSitor = true;
                         ChangeMode(true);
                         isRestart = false;
                     } else {
@@ -1422,6 +1484,92 @@ public class MainActivity extends AppCompatActivity {
                 }*/
                 startActivityForResult(new Intent(MainActivity.this, ConfigureActivity.class), 0);
                 break;
+            case R.id.qiehuan:
+               
+
+                if (popupWindow == null) {
+                    contentView = LayoutInflater.from(this).inflate(R.layout.pop_menu, null);
+                    popupWindow = new PopupWindow(contentView, 300, 200, true);
+                    popupWindow.setOutsideTouchable(true);
+                    popupWindow.setFocusable(false);
+                    final TextView ziYou = (TextView) contentView.findViewById(R.id.ziyou);
+                    final TextView kaoHe = (TextView) contentView.findViewById(R.id.kaohe);
+                    ziYou.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            ziYou.setTextColor(Color.parseColor("#ffffff"));
+                            kaoHe.setTextColor(Color.parseColor("#838396"));
+                            SharedPreferencesUtil.put(MainActivity.this, SharedPreferencesUtil.IS_VISITOR, "1");
+                            isViSitor = (String) SharedPreferencesUtil.get(MainActivity.this, IS_VISITOR, "2");
+                            mTitleTv.setText("自由模式");
+                            if (isViSitor.equals("1")) {
+                                mKaishiTitle.setText("开始");
+                                mShotBtn.setText("射击");
+                                mRemainingTime.setVisibility(View.GONE);
+                                mReadyLayout.setBackgroundResource(R.mipmap.btn01);
+                                mReadyLayout.setClickable(true);
+
+                                ChangeMode(true);
+                            } else {
+                                mRemainingTime.setVisibility(View.VISIBLE);
+
+                                ChangeMode(true);
+                            }
+                            popupWindow.dismiss();
+                        }
+                    });
+                    kaoHe.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            kaoHe.setTextColor(Color.parseColor("#ffffff"));
+                            ziYou.setTextColor(Color.parseColor("#838396"));
+                            SharedPreferencesUtil.put(MainActivity.this, SharedPreferencesUtil.IS_VISITOR, "0");
+                            isViSitor = (String) SharedPreferencesUtil.get(MainActivity.this, IS_VISITOR, "2");
+                            mTitleTv.setText("考核模式");
+                            if (isViSitor.equals("1")) {
+                                mKaishiTitle.setText("开始");
+                                mShotBtn.setText("射击");
+                                mRemainingTime.setVisibility(View.GONE);
+                                mReadyLayout.setBackgroundResource(R.mipmap.btn01);
+                                mReadyLayout.setClickable(true);
+
+                                ChangeMode(true);
+                            } else {
+                                mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
+                                mReadyLayout.setClickable(false);
+                                mRemainingTime.setVisibility(View.VISIBLE);
+
+                                ChangeMode(true);
+                            }
+                            popupWindow.dismiss();
+                        }
+                    });
+
+                    popupWindow.setOutsideTouchable(true);
+                    popupWindow.setFocusable(false);
+                    contentView.setOnTouchListener(new View.OnTouchListener() {
+                        @Override
+                        public boolean onTouch(View v, MotionEvent event) {
+                            if (popupWindow != null && popupWindow.isShowing()) {
+                                popupWindow.dismiss();
+                            }
+                            return false;
+                        }
+                    });
+                }
+                TextView ziYou = (TextView) contentView.findViewById(R.id.ziyou);
+                TextView kaoHe = (TextView) contentView.findViewById(R.id.kaohe);
+                if (isViSitor.equals("1")) {
+                    ziYou.setTextColor(Color.parseColor("#ffffff"));
+                    kaoHe.setTextColor(Color.parseColor("#838396"));
+                }else{
+                    kaoHe.setTextColor(Color.parseColor("#ffffff"));
+                    ziYou.setTextColor(Color.parseColor("#838396"));
+                }
+                popupWindow.showAsDropDown(mQiehuan, 0, 20);
+
+
+                break;
         }
     }
 
@@ -1432,19 +1580,21 @@ public class MainActivity extends AppCompatActivity {
             isShowRedOpen = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.IS_RED, true);
             isViSitor = (String) SharedPreferencesUtil.get(MainActivity.this, IS_VISITOR, "2");
             IS_RADIO = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.IS_RADIO, true);
-            isFromViSitor=true;
+            isFromViSitor = true;
             shotPoint.setShowRed(isShowRedOpen);
             if (isViSitor.equals("1")) {
                 mKaishiTitle.setText("开始");
                 mShotBtn.setText("射击");
                 mRemainingTime.setVisibility(View.GONE);
-                mReadyLayout.setBackgroundResource(R.drawable.red_shape);
+                mReadyLayout.setBackgroundResource(R.mipmap.btn01);
                 mReadyLayout.setClickable(true);
-
+                mTitleTv.setText("自由模式");
                 ChangeMode(true);
-            }else{
+            } else {
                 mRemainingTime.setVisibility(View.VISIBLE);
-
+                mTitleTv.setText("考核模式");
+                mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
+                mReadyLayout.setClickable(false);
                 ChangeMode(true);
             }
 
