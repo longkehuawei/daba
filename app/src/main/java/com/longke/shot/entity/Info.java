@@ -166,25 +166,26 @@ public class Info {
         private String StudentName;
         private int GroupIndex;
         private String StudentCode;
-        private String beginTime;
+        private String BeginShootTime;
 
-        public String getBeginTime() {
-            return beginTime;
+        public String getBeginShootTime() {
+            return BeginShootTime;
         }
 
-        public void setBeginTime(String beginTime) {
-            this.beginTime = beginTime;
+        public void setBeginShootTime(String beginShootTime) {
+            BeginShootTime = beginShootTime;
         }
 
-        public String getEndTime() {
-            return endTime;
+        public String getEndShootTime() {
+            return EndShootTime;
         }
 
-        public void setEndTime(String endTime) {
-            this.endTime = endTime;
+        public void setEndShootTime(String endShootTime) {
+            EndShootTime = endShootTime;
         }
 
-        private String endTime;
+        private String EndShootTime;
+
         private String ShootModeName;
         private int CurrScore;
         private boolean IsLimitBullet;

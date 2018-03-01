@@ -31,15 +31,27 @@
                     android:textColor="#ffffff"
                     android:layout_height="wrap_content"/>
             </LinearLayout>
-
-                <ImageView
-                    android:id="@+id/qiehuan"
-                    android:layout_width="50dp"
-                    android:src="@mipmap/arrow04"
+                <LinearLayout
+                    android:layout_width="wrap_content"
                     android:layout_marginRight="20dp"
                     android:layout_centerVertical="true"
+                    android:gravity="center_vertical"
                     android:layout_alignParentRight="true"
-                    android:layout_height="50dp"/>
+                    android:layout_height="wrap_content">
+                    <ImageView
+                        android:id="@+id/qiehuan"
+                        android:layout_width="50dp"
+                        android:src="@mipmap/arrow04"
+
+                        android:layout_height="50dp"/>
+                    <ImageView
+                        android:id="@+id/sheshouxinxi"
+                        android:layout_width="50dp"
+                        android:layout_marginLeft="20dp"
+                        android:src="@mipmap/set"
+                        android:layout_height="50dp"/>
+                </LinearLayout>
+
 
 
         </RelativeLayout>
@@ -104,7 +116,7 @@
                             android:paddingLeft="10dp"
                             android:textColor="@color/colorCC000000"
                             android:layout_height="wrap_content"
-                            android:id="@+id/sheshouxinxi"/>
+                            />
 
                     </LinearLayout>
 

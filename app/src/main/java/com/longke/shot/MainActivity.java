@@ -76,8 +76,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int HIDE = 100;
     private static final int UPDATE_PROGRESS = 101;
-    @InjectView(R.id.sheshouxinxi)
-    TextView mSheshouxinxi;
+
     @InjectView(R.id.name)
     TextView mName;
     @InjectView(R.id.xuehao)
@@ -228,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
                         mKaishiTitle.setText("重新");
                         mShotBtn.setText("开始");
                         isRestart = true;
-                        getData();
+
                         //info.getData().setStatus(4);
                         mReadyLayout.setBackgroundResource(R.mipmap.btn01);;
                         mReadyLayout.setClickable(true);
@@ -238,6 +237,7 @@ public class MainActivity extends AppCompatActivity {
                         mEndLayout.setBackgroundResource(R.drawable.gray_shape);
                         mEndLayout.setClickable(false);
                     }
+                    GetTrainStudentDataByGroupId();
 
                     break;
                 case 5://强制刷新
@@ -289,7 +289,6 @@ public class MainActivity extends AppCompatActivity {
             mKaishiTitle.setText("开始");
             mShotBtn.setText("射击");
             mTitleTv.setText("自由模式");
-            mRemainingTime.setVisibility(View.GONE);
             mReadyLayout.setBackgroundResource(R.mipmap.btn01);;
             mReadyLayout.setClickable(true);
             ChangeMode(false);
@@ -377,14 +376,17 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }, 30000, 30000);
-        timer1.schedule(new TimerTask() {
+        timer2.schedule(new TimerTask() {
 
             @Override
             public void run() {
-                GetUseTime();
+                if (info != null && info.getData() != null) {
+                    GetUseTime();
+                }
+
 
             }
-        }, 10000, 1000);
+        }, 1000, 1000);
 
     }
 
@@ -803,10 +805,13 @@ public class MainActivity extends AppCompatActivity {
                             shotPoint.setShootDetailListBean(list);
                         }
                         if (info.getData().getStatus() == 0 || info.getData().getStatus() == 2 || info.getData().getStatus() == 4) {
-                            mReadyLayout.setClickable(false);
-                            mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
-                            mEndLayout.setBackgroundResource(R.drawable.gray_shape);
-                            mEndLayout.setClickable(false);
+                            if (!isViSitor.equals("1")) {
+                                mReadyLayout.setClickable(false);
+                                mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
+                                mEndLayout.setBackgroundResource(R.drawable.gray_shape);
+                                mEndLayout.setClickable(false);
+                            }
+
                         } else if (info.getData().getStatus() == 1) {
                             mReadyLayout.setClickable(true);
                             mReadyLayout.setBackgroundResource(R.mipmap.btn01);;
@@ -953,8 +958,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private void GetUseTime() {
         mMyOkhttp.get().url(Urls.BASE_URL + Urls.GetUseTime)
-                .addParam("padCode", sn)
-                .addParam("type", isViSitor)
+                .addParam("beginTime", info.getData().getBeginShootTime())
+                .addParam("endTime", info.getData().getEndShootTime())
                 .tag(this)
                 .enqueue(new JsonResponseHandler() {
                     @Override
@@ -1232,7 +1237,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void subscribeToTopic2() {
         try {
-            mqttAndroidClient.subscribe(Shoot, 2, null, new IMqttActionListener() {
+            mqttAndroidClient.subscribe(Shutdown, 2, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     Log.e("longke", "Subscribed!");
@@ -1247,7 +1252,7 @@ public class MainActivity extends AppCompatActivity {
             });
 
             // THIS DOES NOT WORK!
-            mqttAndroidClient.subscribe(Shoot, 2, new IMqttMessageListener() {
+            mqttAndroidClient.subscribe(Shutdown, 2, new IMqttMessageListener() {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     JSONObject object = new JSONObject(new String(message.getPayload()));
@@ -1275,7 +1280,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void subscribeToTopic3() {
         try {
-            mqttAndroidClient.subscribe(Shutdown, 2, null, new IMqttActionListener() {
+            mqttAndroidClient.subscribe(Shoot, 2, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     Log.e("longke", "Subscribed!");
@@ -1290,7 +1295,7 @@ public class MainActivity extends AppCompatActivity {
             });
 
             // THIS DOES NOT WORK!
-            mqttAndroidClient.subscribe(Shutdown, 2, new IMqttMessageListener() {
+            mqttAndroidClient.subscribe(Shoot, 2, new IMqttMessageListener() {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     JSONObject object = new JSONObject(new String(message.getPayload()));
@@ -1316,7 +1321,7 @@ public class MainActivity extends AppCompatActivity {
                             if (object.has("IsGuest")) {
                                 int IsGuest = object.getInt("IsGuest");
                                 if (IsGuest == 1) {
-                                    getData();
+                                    GetTrainStudentDataByGroupId();
                                     //info.getData().setStatus(3);
 
                                 }
@@ -1505,7 +1510,6 @@ public class MainActivity extends AppCompatActivity {
                             if (isViSitor.equals("1")) {
                                 mKaishiTitle.setText("开始");
                                 mShotBtn.setText("射击");
-                                mRemainingTime.setVisibility(View.GONE);
                                 mReadyLayout.setBackgroundResource(R.mipmap.btn01);
                                 mReadyLayout.setClickable(true);
 
@@ -1529,7 +1533,6 @@ public class MainActivity extends AppCompatActivity {
                             if (isViSitor.equals("1")) {
                                 mKaishiTitle.setText("开始");
                                 mShotBtn.setText("射击");
-                                mRemainingTime.setVisibility(View.GONE);
                                 mReadyLayout.setBackgroundResource(R.mipmap.btn01);
                                 mReadyLayout.setClickable(true);
 
@@ -1585,7 +1588,6 @@ public class MainActivity extends AppCompatActivity {
             if (isViSitor.equals("1")) {
                 mKaishiTitle.setText("开始");
                 mShotBtn.setText("射击");
-                mRemainingTime.setVisibility(View.GONE);
                 mReadyLayout.setBackgroundResource(R.mipmap.btn01);
                 mReadyLayout.setClickable(true);
                 mTitleTv.setText("自由模式");
