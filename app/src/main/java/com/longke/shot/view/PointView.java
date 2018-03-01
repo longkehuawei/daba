@@ -103,11 +103,11 @@ public class PointView extends View {
                 Info.DataBean.ShootDetailListBean shootDetailListBean=mTempShootDetailListBean.get(i);
                 canvas.drawRect(shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, shootDetailListBean.getX()*pre+shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre+shootDetailListBean.getHeight()*pre/2, mPaint);
                 //canvas.drawCircle(shootDetailListBean.getX()*pre,shootDetailListBean.getY()*pre,shootDetailListBean.getWidth()*pre/2,mPaint);
-                if(isShowRed){
+             /*   if(isShowRed){
                     mPaint.setColor(Color.parseColor("#0092FD"));
                     mPaint.setTextSize(20);
                     canvas.drawText(shootDetailListBean.getBulletIndex()+"", shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, mPaint);
-                }
+                }*/
 
             }
             for(int i=0;i<mShootDetailListBean.size();i++){

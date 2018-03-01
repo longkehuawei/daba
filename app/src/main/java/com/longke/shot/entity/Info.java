@@ -167,6 +167,15 @@ public class Info {
         private int GroupIndex;
         private String StudentCode;
         private String BeginShootTime;
+        private String TargetName;
+
+        public String getTargetName() {
+            return TargetName;
+        }
+
+        public void setTargetName(String targetName) {
+            TargetName = targetName;
+        }
 
         public String getBeginShootTime() {
             return BeginShootTime;

@@ -117,6 +117,8 @@ public class MainActivity extends AppCompatActivity {
     ImageView mQiehuan;
     @InjectView(R.id.title_tv)
     TextView mTitleTv;
+    @InjectView(R.id.TargetName_tv)
+    TextView mTargetNameTv;
     private IjkVideoView mVideoView;
     private PointView shotPoint;
     private int mDuration;
@@ -229,7 +231,8 @@ public class MainActivity extends AppCompatActivity {
                         isRestart = true;
 
                         //info.getData().setStatus(4);
-                        mReadyLayout.setBackgroundResource(R.mipmap.btn01);;
+                        mReadyLayout.setBackgroundResource(R.mipmap.btn01);
+                        ;
                         mReadyLayout.setClickable(true);
                     } else {
                         mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
@@ -289,10 +292,11 @@ public class MainActivity extends AppCompatActivity {
             mKaishiTitle.setText("开始");
             mShotBtn.setText("射击");
             mTitleTv.setText("自由模式");
-            mReadyLayout.setBackgroundResource(R.mipmap.btn01);;
+            mReadyLayout.setBackgroundResource(R.mipmap.btn01);
+            ;
             mReadyLayout.setClickable(true);
             ChangeMode(false);
-        }else{
+        } else {
             mTitleTv.setText("考核模式");
         }
         DisplayMetrics dm = new DisplayMetrics();
@@ -436,7 +440,7 @@ public class MainActivity extends AppCompatActivity {
         // mMediaPlayer = new MediaPlayer();
         // mMediaPlayer.setDataSource(getApplicationContext(), alert);
         /*if (alert == null) {
-			music = "bugu.mp3";
+            music = "bugu.mp3";
 		} else {
 			*//*if ("0".equals(alert.getAlertmusic())) {
 				music = "bugu.mp3";
@@ -601,6 +605,7 @@ public class MainActivity extends AppCompatActivity {
                         mXuehao.setText("学号 ：" + data.getStudentCode() + "");
                         mKemu.setText("科目 ：" + data.getShootModeName() + "");
                         mBencisheji.setText(data.getCurrScore() + "");
+                        mTargetNameTv.setText(data.getTargetName());
 
                         mZongchengji.setText(data.getTotalScore() + "");
                         if (data.getShootDetailList() == null || data.getShootDetailList().size() == 0) {
@@ -609,7 +614,7 @@ public class MainActivity extends AppCompatActivity {
                             mShengyuzidan.setText(data.getShootDetailList().get(data.getShootDetailList().size() - 1).getBulletIndex() + "");
 
                         }
-                       // mShengyushijian.setText(data.getRemainTime());
+                        // mShengyushijian.setText(data.getRemainTime());
                         if (isFrist) {
                             if (!isFromViSitor) {
                                 setVideoUri();
@@ -646,7 +651,8 @@ public class MainActivity extends AppCompatActivity {
 
                         } else if (info.getData().getStatus() == 1) {
                             mReadyLayout.setClickable(true);
-                            mReadyLayout.setBackgroundResource(R.mipmap.btn01);;
+                            mReadyLayout.setBackgroundResource(R.mipmap.btn01);
+                            ;
                             mEndLayout.setBackgroundResource(R.drawable.gray_shape);
                             mEndLayout.setClickable(false);
                         } else if (info.getData().getStatus() == 3) {
@@ -768,11 +774,15 @@ public class MainActivity extends AppCompatActivity {
                         }
                         info = new Gson().fromJson(response.toString(), Info.class);
                         Info.DataBean data = info.getData();
+                        if (info == null || info.getData() == null) {
+                            return;
+                        }
                         mName.setText("姓名 ：" + data.getStudentName());
                         mZuhao.setText("组号 ：第" + data.getGroupIndex() + "组");
                         mXuehao.setText("学号 ：" + data.getStudentCode() + "");
                         mKemu.setText("科目 ：" + data.getShootModeName() + "");
                         mBencisheji.setText(data.getCurrScore() + "");
+                        mTargetNameTv.setText(data.getTargetName());
                         if (data.getShootDetailList() == null || data.getShootDetailList().size() == 0) {
                             mShengyuzidan.setText("0");
                         } else {
@@ -780,7 +790,7 @@ public class MainActivity extends AppCompatActivity {
 
                         }
                         mZongchengji.setText(data.getTotalScore() + "");
-                       // mShengyushijian.setText(data.getRemainTime());
+                        // mShengyushijian.setText(data.getRemainTime());
                         if (isNull) {
                             setVideoUri();
                         }
@@ -814,7 +824,8 @@ public class MainActivity extends AppCompatActivity {
 
                         } else if (info.getData().getStatus() == 1) {
                             mReadyLayout.setClickable(true);
-                            mReadyLayout.setBackgroundResource(R.mipmap.btn01);;
+                            mReadyLayout.setBackgroundResource(R.mipmap.btn01);
+                            ;
                             mEndLayout.setBackgroundResource(R.drawable.gray_shape);
                             mEndLayout.setClickable(false);
                         } else if (info.getData().getStatus() == 3) {
@@ -926,7 +937,8 @@ public class MainActivity extends AppCompatActivity {
                                     isFrist = true;
                                     mKaishiTitle.setText("开始");
                                     mShotBtn.setText("射击");
-                                    mReadyLayout.setBackgroundResource(R.mipmap.btn01);;
+                                    mReadyLayout.setBackgroundResource(R.mipmap.btn01);
+                                    ;
                                     mReadyLayout.setClickable(true);
                                     getData();
                                     GetConfigData();
@@ -953,6 +965,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
+
     /**
      * 切换模式
      */
@@ -968,7 +981,7 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             if (response.getBoolean("Success")) {
 
-                                String Message= response.getString("Message");
+                                String Message = response.getString("Message");
                                 mShengyushijian.setText(Message);
 
                             }
@@ -1490,7 +1503,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(new Intent(MainActivity.this, ConfigureActivity.class), 0);
                 break;
             case R.id.qiehuan:
-               
+
 
                 if (popupWindow == null) {
                     contentView = LayoutInflater.from(this).inflate(R.layout.pop_menu, null);
@@ -1565,7 +1578,7 @@ public class MainActivity extends AppCompatActivity {
                 if (isViSitor.equals("1")) {
                     ziYou.setTextColor(Color.parseColor("#ffffff"));
                     kaoHe.setTextColor(Color.parseColor("#838396"));
-                }else{
+                } else {
                     kaoHe.setTextColor(Color.parseColor("#ffffff"));
                     ziYou.setTextColor(Color.parseColor("#838396"));
                 }
