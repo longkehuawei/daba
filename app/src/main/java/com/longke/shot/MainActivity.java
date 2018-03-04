@@ -338,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
         shotPoint.setShowRed(isShowRedOpen);
 
         initData();
-        initConnection();
+
         DeviceIsRegist();
         GetConfigData();
 
@@ -692,6 +692,7 @@ public class MainActivity extends AppCompatActivity {
                             String MqttServerIP = object.getString("MqttServerIP");
                             String MqttPort = object.getString("MqttPort");
                             serverUri = "tcp://" + MqttServerIP + ":" + MqttPort;
+                            initConnection();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -1413,6 +1414,9 @@ public class MainActivity extends AppCompatActivity {
             Gson gson = new Gson();
 
             message.setPayload(gson.toJson(heartbeat).getBytes());
+            if(mqttAndroidClient==null){
+                return;
+            }
             mqttAndroidClient.publish("Heartbeat", message);
             if (!mqttAndroidClient.isConnected()) {
                 //addToHistory(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");
@@ -1597,6 +1601,7 @@ public class MainActivity extends AppCompatActivity {
             isViSitor = (String) SharedPreferencesUtil.get(MainActivity.this, IS_VISITOR, "2");
             IS_RADIO = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.IS_RADIO, true);
             isFromViSitor = true;
+            Urls.BASE_URL = (String)  SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.BASE_URL, "");
             shotPoint.setShowRed(isShowRedOpen);
             if (isViSitor.equals("1")) {
                 mKaishiTitle.setText("开始");

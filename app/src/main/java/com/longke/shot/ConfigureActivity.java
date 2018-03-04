@@ -39,8 +39,10 @@ public class ConfigureActivity extends AppCompatActivity {
         setContentView(R.layout.activity_configure);
         ButterKnife.inject(this);
         isFromMain = getIntent().getBooleanExtra("isFromMain", false);
-        urlName.setText("http://120.76.153.166:6002");
+
         String isViSitor = (String) SharedPreferencesUtil.get(ConfigureActivity.this, IS_VISITOR, "2");
+        String baseUrl = (String)  SharedPreferencesUtil.get(ConfigureActivity.this, SharedPreferencesUtil.BASE_URL, "");
+        urlName.setText(baseUrl);
         boolean IS_RADIO = (boolean) SharedPreferencesUtil.get(ConfigureActivity.this, SharedPreferencesUtil.IS_RADIO, true);
         boolean isShowRedOpen = (boolean) SharedPreferencesUtil.get(ConfigureActivity.this, SharedPreferencesUtil.IS_RED, true);
         isRadio.setChecked(IS_RADIO);
