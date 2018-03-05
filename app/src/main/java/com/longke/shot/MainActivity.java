@@ -167,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isRestart = false;
     private boolean isFromViSitor = false;
     List<Integer> listRadio = new ArrayList<Integer>();
+    private boolean isConnnect;
 
 
     String sn;
@@ -516,7 +517,11 @@ public class MainActivity extends AppCompatActivity {
      * 建立连接
      */
     private void initConnection() {
+        if(isConnnect){
+            return;
+        }
         clientId = clientId + System.currentTimeMillis();
+
         mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
             @Override
@@ -558,6 +563,7 @@ public class MainActivity extends AppCompatActivity {
             mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
+
                     DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
                     disconnectedBufferOptions.setBufferEnabled(true);
                     disconnectedBufferOptions.setBufferSize(100);
@@ -569,6 +575,7 @@ public class MainActivity extends AppCompatActivity {
                     subscribeToTopic2();//shot
                     subscribeToTopic3();//shot
                     InitData();//强制刷新
+                    isConnnect=true;
                 }
 
                 @Override
