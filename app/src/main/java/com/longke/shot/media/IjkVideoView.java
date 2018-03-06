@@ -369,13 +369,13 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
             Log.w(TAG, "Unable to open content: " + mUri, ex);
             mCurrentState = STATE_ERROR;
             mTargetState = STATE_ERROR;
-            mErrorListener.onError(mMediaPlayer, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
+            //mErrorListener.onError(mMediaPlayer, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
             return;
         } catch (IllegalArgumentException ex) {
             Log.w(TAG, "Unable to open content: " + mUri, ex);
             mCurrentState = STATE_ERROR;
             mTargetState = STATE_ERROR;
-            mErrorListener.onError(mMediaPlayer, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
+            //mErrorListener.onError(mMediaPlayer, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
             return;
         } finally {
             // REMOVED: mPendingSubtitleTracks.clear();
@@ -534,21 +534,21 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
                             message = "Invalid progressive playback";
                         }
 
-                        new android.app.AlertDialog.Builder(getContext())
+                       /* new android.app.AlertDialog.Builder(getContext())
                                 .setMessage(message)
                                 .setPositiveButton("error",
                                         new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int whichButton) {
-                                            /* If we get here, there is no onError listener, so
+                                            *//* If we get here, there is no onError listener, so
                                              * at least inform them that the video is over.
-                                             */
+                                             *//*
                                                 if (mOnCompletionListener != null) {
                                                     mOnCompletionListener.onCompletion(mMediaPlayer);
                                                 }
                                             }
                                         })
                                 .setCancelable(false)
-                                .show();
+                                .show();*/
                     }
                     return true;
                 }

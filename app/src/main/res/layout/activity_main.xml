@@ -4,15 +4,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_main"
     android:keepScreenOn="true"
-    android:background="@mipmap/background"
+
+
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <LinearLayout
+        android:id="@+id/root_layout"
         android:layout_width="match_parent"
         android:orientation="vertical"
+
+
         android:layout_height="wrap_content">
         <RelativeLayout
             android:layout_width="match_parent"
+            android:background="@mipmap/top"
             android:layout_height="59dp">
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -48,7 +53,6 @@
                     <ImageView
                         android:id="@+id/sheshouxinxi"
                         android:layout_width="50dp"
-                        android:layout_marginLeft="20dp"
                         android:src="@mipmap/set"
                         android:layout_height="50dp"/>
                 </LinearLayout>
@@ -60,37 +64,56 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:orientation="horizontal"
+
             android:layout_height="match_parent">
-            <RelativeLayout
+            <FrameLayout
                 android:layout_width="wrap_content"
+                android:background="@mipmap/left"
+                android:layout_height="wrap_content">
+                <RelativeLayout
+                    android:layout_width="wrap_content"
 
-                android:layout_margin="12dp"
-                android:background="@drawable/beijin"
-                android:layout_height="match_parent">
-                <!--播放控件 IjkVideoView -->
-                <com.longke.shot.media.IjkVideoView
-                    android:id="@+id/video_view"
-                    android:layout_centerVertical="true"
-                    android:layout_gravity="center_vertical"
-                    android:layout_width="1000px"
-                    android:layout_margin="2dp"
-                    android:layout_height="1000px"/>
-                <com.longke.shot.view.PointView
-                    android:id="@+id/shot_point"
-                    android:layout_alignTop="@+id/video_view"
-                    android:layout_width="1000px"
-                    app:radio="10dp"
-                    android:layout_margin="2dp"
-                    app:pointColor="#ff0000"
-                    android:layout_height="1000px"/>
+                    android:layout_margin="12dp"
+                    android:background="@drawable/beijin"
+                    android:padding="2dp"
+                    android:layout_height="match_parent">
+                    <!--播放控件 IjkVideoView -->
+                    <com.longke.shot.media.IjkVideoView
+                        android:id="@+id/video_view"
+                        android:layout_centerVertical="true"
+                        android:layout_gravity="center_vertical"
+                        android:layout_width="1000px"
+                        android:layout_height="1000px"/>
+                    <com.longke.shot.view.PointView
+                        android:id="@+id/shot_point"
+                        android:layout_alignTop="@+id/video_view"
+                        android:layout_width="1000px"
+                        app:radio="10dp"
+                        app:pointColor="#ff0000"
+                        android:layout_height="1000px"/>
+
+                        <TextView
+                            android:id="@+id/TargetName_tv"
+                            android:layout_alignParentBottom="true"
+                            android:layout_width="wrap_content"
+                            android:textSize="22sp"
+                            android:layout_gravity="center_vertical"
+                            android:paddingLeft="10dp"
+                            android:paddingBottom="10dp"
+                            android:textColor="@color/colorCC000000"
+                            android:layout_height="wrap_content"
+                            />
 
 
-            </RelativeLayout>
+                </RelativeLayout>
+            </FrameLayout>
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:padding="20dp"
+                android:background="@mipmap/right"
                 android:layout_height="match_parent">
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -105,7 +128,7 @@
                         android:layout_width="match_parent"
 
                         android:orientation="vertical"
-                        android:padding="20dp"
+                        android:padding="15dp"
                         android:layout_height="wrap_content">
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -125,15 +148,7 @@
                                 android:textColor="@color/colorCC000000"
                                 android:layout_height="wrap_content"
                                 />
-                            <TextView
-                                android:id="@+id/TargetName_tv"
-                                android:layout_width="wrap_content"
-                                android:textSize="22sp"
-                                android:layout_gravity="center_vertical"
-                                android:paddingLeft="20dp"
-                                android:textColor="@color/colorCC000000"
-                                android:layout_height="wrap_content"
-                                />
+
 
                         </LinearLayout>
 
@@ -215,7 +230,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:text="本次成绩"
-                                android:textSize="20sp"
+                                android:textSize="18sp"
                                 android:paddingLeft="10dp"
                                 android:gravity="center_vertical"
                                 android:textColor="@color/colorCC000000"
@@ -231,7 +246,7 @@
                                 android:layout_width="wrap_content"
                                 android:text="0"
                                 android:textColor="@color/colorCC000000"
-                                android:textSize="50sp"
+                                android:textSize="40sp"
                                 android:textStyle="bold"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/bencisheji"/>
@@ -239,7 +254,7 @@
                                 android:layout_width="wrap_content"
                                 android:text="环"
                                 android:textColor="#ffffff"
-                                android:textSize="20sp"
+                                android:textSize="18sp"
                                 android:paddingLeft="10dp"
                                 android:layout_height="wrap_content"/>
                         </LinearLayout>
@@ -269,7 +284,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:text="当前子弹"
-                                android:textSize="20sp"
+                                android:textSize="18sp"
                                 android:paddingLeft="10dp"
                                 android:gravity="center_vertical"
                                 android:textColor="@color/colorCC000000"
@@ -285,14 +300,15 @@
                                 android:layout_width="wrap_content"
                                 android:text="第"
                                 android:textColor="#ffffff"
-                                android:textSize="20sp"
+                                android:textSize="18sp"
                                 android:paddingLeft="10dp"
+                                android:paddingRight="10dp"
                                 android:layout_height="wrap_content"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:text="0"
                                 android:textColor="@color/colorCC000000"
-                                android:textSize="50sp"
+                                android:textSize="40sp"
                                 android:textStyle="bold"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/shengyuzidan"/>
@@ -300,7 +316,7 @@
                                 android:layout_width="wrap_content"
                                 android:text="发"
                                 android:textColor="#ffffff"
-                                android:textSize="20sp"
+                                android:textSize="18sp"
                                 android:paddingLeft="10dp"
                                 android:layout_height="wrap_content"/>
                         </LinearLayout>
@@ -330,7 +346,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:text="总成绩"
-                                android:textSize="20sp"
+                                android:textSize="18sp"
                                 android:paddingLeft="10dp"
                                 android:gravity="center_vertical"
                                 android:textColor="@color/colorCC000000"
@@ -346,7 +362,7 @@
                                 android:layout_width="wrap_content"
                                 android:text="0"
                                 android:textColor="@color/colorCC000000"
-                                android:textSize="50sp"
+                                android:textSize="40sp"
                                 android:textStyle="bold"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/zongchengji"/>
@@ -354,7 +370,7 @@
                                 android:layout_width="wrap_content"
                                 android:text="环"
                                 android:textColor="#ffffff"
-                                android:textSize="20sp"
+                                android:textSize="18sp"
                                 android:paddingLeft="10dp"
                                 android:layout_height="wrap_content"/>
                         </LinearLayout>
@@ -365,7 +381,7 @@
                     android:id="@+id/remaining_time"
                     android:layout_width="match_parent"
                     android:orientation="horizontal"
-                    android:layout_marginTop="15dp"
+                    android:layout_marginTop="20dp"
                     android:gravity="center"
                     android:padding="20dp"
                     android:background="@drawable/beijin"
@@ -388,7 +404,7 @@
                 <!--准备射击按钮-->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_marginTop="70dp"
+                    android:layout_marginTop="80dp"
                     android:layout_height="wrap_content">
                     <LinearLayout
                         android:id="@+id/ready_layout"

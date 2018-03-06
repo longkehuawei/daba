@@ -119,6 +119,8 @@ public class MainActivity extends AppCompatActivity {
     TextView mTitleTv;
     @InjectView(R.id.TargetName_tv)
     TextView mTargetNameTv;
+    @InjectView(R.id.root_layout)
+    LinearLayout mRootLayout;
     private IjkVideoView mVideoView;
     private PointView shotPoint;
     private int mDuration;
@@ -256,6 +258,10 @@ public class MainActivity extends AppCompatActivity {
                     mEndLayout.setClickable(true);
                     timer.start();
                     getData();
+                    break;
+                case 7:
+                    mActivityMain.setBackgroundResource(R.mipmap.jieshu);
+                    mRootLayout.setVisibility(View.GONE);
                     break;
             }
         }
@@ -444,7 +450,7 @@ public class MainActivity extends AppCompatActivity {
             music = "bugu.mp3";
 		} else {
 			*//*if ("0".equals(alert.getAlertmusic())) {
-				music = "bugu.mp3";
+                music = "bugu.mp3";
 			} else if ("1".equals(alert.getAlertmusic())) {
 				music = "lingdang.mp3";
 			} else if ("2".equals(alert.getAlertmusic())) {
@@ -517,7 +523,7 @@ public class MainActivity extends AppCompatActivity {
      * 建立连接
      */
     private void initConnection() {
-        if(isConnnect){
+        if (isConnnect) {
             return;
         }
         clientId = clientId + System.currentTimeMillis();
@@ -575,7 +581,7 @@ public class MainActivity extends AppCompatActivity {
                     subscribeToTopic2();//shot
                     subscribeToTopic3();//shot
                     InitData();//强制刷新
-                    isConnnect=true;
+                    isConnnect = true;
                 }
 
                 @Override
@@ -1280,7 +1286,7 @@ public class MainActivity extends AppCompatActivity {
                     if (object.has("Type")) {
                         String type = object.getString("Type");
                         if ("Off".equals(type)) {
-
+                             handler.sendEmptyMessage(7);
                         }
 
 
@@ -1421,13 +1427,16 @@ public class MainActivity extends AppCompatActivity {
             Gson gson = new Gson();
 
             message.setPayload(gson.toJson(heartbeat).getBytes());
-            if(mqttAndroidClient==null){
+            if (mqttAndroidClient == null) {
+                initConnection();
+                return;
+            }
+            if (!mqttAndroidClient.isConnected()) {
+                initConnection();
                 return;
             }
             mqttAndroidClient.publish("Heartbeat", message);
-            if (!mqttAndroidClient.isConnected()) {
-                //addToHistory(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");
-            }
+
         } catch (MqttException e) {
             System.err.println("Error Publishing: " + e.getMessage());
             e.printStackTrace();
@@ -1487,11 +1496,13 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         if (info != null && info.getData() != null) {
                             startShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
+                            setVideoUri();
                         }
                     }
                 } else {
                     if (info != null && info.getData() != null) {
                         startShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
+                        setVideoUri();
                     }
                 }
 
@@ -1608,7 +1619,7 @@ public class MainActivity extends AppCompatActivity {
             isViSitor = (String) SharedPreferencesUtil.get(MainActivity.this, IS_VISITOR, "2");
             IS_RADIO = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.IS_RADIO, true);
             isFromViSitor = true;
-            Urls.BASE_URL = (String)  SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.BASE_URL, "");
+            Urls.BASE_URL = (String) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.BASE_URL, "");
             shotPoint.setShowRed(isShowRedOpen);
             if (isViSitor.equals("1")) {
                 mKaishiTitle.setText("开始");
