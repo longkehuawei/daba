@@ -40,6 +40,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import tv.danmaku.ijk.media.player.AndroidMediaPlayer;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
@@ -106,7 +108,7 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
     private int mVideoSarNum;
     private int mVideoSarDen;
     private boolean usingAndroidPlayer = false;
-    private boolean usingMediaCodec = true;
+    private boolean usingMediaCodec = false;
     private boolean usingMediaCodecAutoRotate = false;
     private boolean usingOpenSLES = false;
     private String pixelFormat = "";//Auto Select=,RGB 565=fcc-rv16,RGB 888X=fcc-rv32,YV12=fcc-yv12,默认为RGB 888X
@@ -237,6 +239,10 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
         setVideoURI(uri, null);
     }
 
+    public void setVideoURIWithoutUpdate(Uri uri) {
+        setVideoURIWithoutUpdate(uri,null);
+    }
+
     /**
      * Sets video URI using specific headers.
      *
@@ -254,6 +260,13 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
         openVideo();
         requestLayout();
         invalidate();
+    }
+
+    private void setVideoURIWithoutUpdate(Uri uri, Map<String, String> headers) {
+        mUri = uri;
+        mHeaders = headers;
+        mSeekWhenPrepared = 0;
+        openVideo();
     }
 
     // REMOVED: addSubtitleSource
@@ -365,22 +378,45 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
             // target state that was there before.
             mCurrentState = STATE_PREPARING;
             attachMediaController();
+            timer1.cancel();
         } catch (IOException ex) {
             Log.w(TAG, "Unable to open content: " + mUri, ex);
             mCurrentState = STATE_ERROR;
             mTargetState = STATE_ERROR;
-            //mErrorListener.onError(mMediaPlayer, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
+            //openVideo();
+            timer1.schedule(new TimerTask() {
+
+                @Override
+                public void run() {
+                    openVideo();
+                    requestLayout();
+                    invalidate();
+
+                }
+            }, 15000, 15000);
+            mErrorListener.onError(mMediaPlayer, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
             return;
         } catch (IllegalArgumentException ex) {
             Log.w(TAG, "Unable to open content: " + mUri, ex);
             mCurrentState = STATE_ERROR;
             mTargetState = STATE_ERROR;
-            //mErrorListener.onError(mMediaPlayer, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
+            timer1.schedule(new TimerTask() {
+
+                @Override
+                public void run() {
+                    openVideo();
+                    requestLayout();
+                    invalidate();
+
+                }
+            }, 15000, 15000);
+            mErrorListener.onError(mMediaPlayer, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
             return;
         } finally {
             // REMOVED: mPendingSubtitleTracks.clear();
         }
     }
+    Timer timer1 = new Timer();
 
     public void setMediaController(IMediaController controller) {
         if (mMediaController != null) {
@@ -534,14 +570,13 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
                             message = "Invalid progressive playback";
                         }
 
-                       /* new android.app.AlertDialog.Builder(getContext())
+                      /*  new android.app.AlertDialog.Builder(getContext())
                                 .setMessage(message)
                                 .setPositiveButton("error",
                                         new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int whichButton) {
-                                            *//* If we get here, there is no onError listener, so
-                                             * at least inform them that the video is over.
-                                             *//*
+
+
                                                 if (mOnCompletionListener != null) {
                                                     mOnCompletionListener.onCompletion(mMediaPlayer);
                                                 }

@@ -11,6 +11,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import com.longke.shot.R;
+import com.longke.shot.SharedPreferencesUtil;
 import com.longke.shot.entity.Info;
 
 import java.util.ArrayList;
@@ -30,6 +31,14 @@ public class PointView extends View {
     private boolean isShowRed=true;
     private boolean isShowAll=true;
 
+
+
+    public void setShowOrder(boolean showOrder) {
+        this.showOrder = showOrder;
+    }
+
+    private boolean showOrder=true;
+
     public void setShowAll(boolean showAll) {
         isShowAll = showAll;
         invalidate();
@@ -45,14 +54,20 @@ public class PointView extends View {
 
 
 
-    public void setTempShootDetailListBean(List<Info.DataBean.ShootDetailListBean> tempShootDetailListBean) {
+    public void setTempShootDetailListBean(List<Info.DataBean.ShootDetailListBean> tempShootDetailListBean,boolean isDraw) {
         mTempShootDetailListBean = tempShootDetailListBean;
-        invalidate();
+        if(isDraw){
+            invalidate();
+        }
+
     }
 
     public void setShootDetailListBean(List<Info.DataBean.ShootDetailListBean> shootDetailListBean) {
         mShootDetailListBean = shootDetailListBean;
+
         invalidate();
+
+
     }
 
     public void setBilu(float pre) {
@@ -123,7 +138,13 @@ public class PointView extends View {
                 if(isShowRed){
                     mPaint.setColor(Color.parseColor("#0092FD"));
                     mPaint.setTextSize(20);
-                    canvas.drawText(shootDetailListBean.getBulletIndex()+"", shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, mPaint);
+
+                    if (showOrder) {
+                        canvas.drawText(shootDetailListBean.getBulletIndex()+"", shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, mPaint);
+                    }
+                    else {
+                        canvas.drawText(shootDetailListBean.getScore()+"", shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, mPaint);
+                    }
                 }
 
             }
@@ -141,11 +162,11 @@ public class PointView extends View {
                 Info.DataBean.ShootDetailListBean shootDetailListBean=mTempShootDetailListBean.get(i);
                 canvas.drawRect(shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, shootDetailListBean.getX()*pre+shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre+shootDetailListBean.getHeight()*pre/2, mPaint);
                 //canvas.drawCircle(shootDetailListBean.getX()*pre,shootDetailListBean.getY()*pre,shootDetailListBean.getWidth()*pre/2,mPaint);
-                if(isShowRed){
+               /* if(isShowRed){
                     mPaint.setColor(Color.parseColor("#0092FD"));
                     mPaint.setTextSize(20);
                     canvas.drawText(shootDetailListBean.getBulletIndex()+"", shootDetailListBean.getX()*pre-shootDetailListBean.getWidth()*pre/2, shootDetailListBean.getY()*pre-shootDetailListBean.getHeight()*pre/2, mPaint);
-                }
+                }*/
 
             }
         }

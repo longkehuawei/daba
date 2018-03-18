@@ -2,10 +2,15 @@ package com.longke.shot;
 
 
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Color;
 import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -30,6 +35,7 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.longke.shot.entity.Data;
 import com.longke.shot.entity.Heartbeat;
 import com.longke.shot.entity.Info;
 import com.longke.shot.media.IRenderView;
@@ -60,6 +66,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.ButterKnife;
@@ -68,7 +76,10 @@ import butterknife.OnClick;
 import okhttp3.OkHttpClient;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
+import static android.R.attr.data;
+import static android.app.Activity.RESULT_OK;
 import static com.longke.shot.SharedPreferencesUtil.IS_VISITOR;
+import static com.longke.shot.SharedPreferencesUtil.SHOW_OPTION;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -127,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
     private int CONTINUE_TIME;
     TextView numTv;
     MqttAndroidClient mqttAndroidClient;
+    private ScheduledExecutorService scheduler;
 
     String serverUri = "tcp://120.76.153.166:1883";
 
@@ -144,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
             .build();
     private MyOkHttp mMyOkhttp;
     CountDownTimer timer;
+    CountDownTimer videoUpdater;
     List<Info.DataBean.ShootDetailListBean> list = new ArrayList<Info.DataBean.ShootDetailListBean>();
     List<Info.DataBean.ShootDetailListBean> tempList = new ArrayList<Info.DataBean.ShootDetailListBean>();
     Info info;
@@ -163,14 +176,16 @@ public class MainActivity extends AppCompatActivity {
     private boolean isShowRed = true;
     private boolean isShowRedOpen = true;
     private boolean IS_RADIO = true;
+    private boolean SHOW_OPTION = true;
     private ArrayList<String> mMusicList = new ArrayList<>();
     private int mPosition;
     private boolean mIsPlaying = false;
     private boolean isRestart = false;
     private boolean isFromViSitor = false;
     List<Integer> listRadio = new ArrayList<Integer>();
+    MqttConnectOptions mqttConnectOptions;
     private boolean isConnnect;
-
+    private boolean isShowOrder;
 
     String sn;
     int i = 0;
@@ -187,17 +202,28 @@ public class MainActivity extends AppCompatActivity {
                      获取数据，更新UI
                      */
                     tempList.clear();
-                    SpTools.putStringValue(MainActivity.this, info.getData().getStudentCode(), "");
-                    shotPoint.setTempShootDetailListBean(tempList);
+                    if (isViSitor.equals("1")) {
+                        SpTools.putStringValue(MainActivity.this, SharedPreferencesUtil.YOU_KE,"");
+                    } else {
+                        SpTools.putStringValue(MainActivity.this, SharedPreferencesUtil.KAO_HEI,"");
+                    }
+                   // SpTools.putStringValue(MainActivity.this, info.getData().getStudentCode(), "");
+                    shotPoint.setTempShootDetailListBean(tempList,true);
 
                     mReadyLayout.setBackgroundResource(R.mipmap.btn01);
                     mReadyLayout.setClickable(true);
                     mEndLayout.setBackgroundResource(R.drawable.gray_shape);
+                    mEndLayout.setClickable(false);
                     break;
                 case 2:
                     /** 倒计时60秒，一次1秒 */
                     // ShowCountDialog("3");
-                    timer.start();
+                    try {
+                        timer.cancel();
+                        timer.start();
+                    }catch (Exception e){
+
+                    }
 
                     break;
                 case 3:
@@ -206,7 +232,8 @@ public class MainActivity extends AppCompatActivity {
 
                     if (list != null) {
                         if (tempList.size() > 0) {
-                            shotPoint.setTempShootDetailListBean(tempList);
+
+                            shotPoint.setTempShootDetailListBean(tempList,false);
 
                         }
                         shotPoint.setShootDetailListBean(list);
@@ -228,6 +255,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     break;
                 case 4://结束
+//                    mVideoView.stopPlayback();
                     if (isViSitor.equals("1")) {
                         mKaishiTitle.setText("重新");
                         mShotBtn.setText("开始");
@@ -263,6 +291,9 @@ public class MainActivity extends AppCompatActivity {
                     mActivityMain.setBackgroundResource(R.mipmap.jieshu);
                     mRootLayout.setVisibility(View.GONE);
                     break;
+                case 10:
+                    restartApp();
+                    break;
             }
         }
     };
@@ -271,6 +302,7 @@ public class MainActivity extends AppCompatActivity {
     Timer timer2 = new Timer();
     private PopupWindow popupWindow;
     private View contentView;
+    private ConnectivityManager mConnectivityManager;
 
 
     @Override
@@ -294,6 +326,8 @@ public class MainActivity extends AppCompatActivity {
         isShowRedOpen = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.IS_RED, true);
         isViSitor = (String) SharedPreferencesUtil.get(MainActivity.this, IS_VISITOR, "2");
         IS_RADIO = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.IS_RADIO, true);
+        SHOW_OPTION = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.SHOW_OPTION, true);
+
         mMyOkhttp = new MyOkHttp(okHttpClient);
         if (isViSitor.equals("1")) {
             mKaishiTitle.setText("开始");
@@ -330,7 +364,7 @@ public class MainActivity extends AppCompatActivity {
                     clickCount++;
                 } else if (clickCount == 1) {
                     long curTime = System.currentTimeMillis();
-                    if ((curTime - preClickTime) < 500) {
+                    if ((curTime - preClickTime) < 1000) {
                         doubleClick();
                     }
                     clickCount = 0;
@@ -342,6 +376,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        shotPoint.setShowOrder(SHOW_OPTION);
         shotPoint.setShowRed(isShowRedOpen);
 
         initData();
@@ -353,7 +388,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         // map.put(1, soundPool.load(this,R.raw.wrong,1));
-        timer = new CountDownTimer(4 * 1000, 1000) {
+        timer = new CountDownTimer(4000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 // TODO Auto-generated method stub
@@ -372,9 +407,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFinish() {
 
-                mNumLayout.setVisibility(View.GONE);
+                try {
+                    setVideoUri(false);
+                    mNumLayout.setVisibility(View.GONE);
+                }catch (Exception e){
+
+                }
                 if (isViSitor.equals("1")) {
-                    GuestRealBeginShoot();
+                    if(info!=null&&info.getData()!=null){
+                        GuestRealBeginShoot();
+                    }
+
                 }
 
             }
@@ -386,7 +429,7 @@ public class MainActivity extends AppCompatActivity {
                 publishMessage();
 
             }
-        }, 30000, 30000);
+        }, 15000, 15000);
         timer2.schedule(new TimerTask() {
 
             @Override
@@ -398,17 +441,44 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }, 1000, 1000);
-
+//        videoUpdater = new CountDownTimer(1000 * 1000 * 1000, 3000) {
+//            @Override
+//            public void onTick(long millisUntilFinished) {
+//                setVideoUri(false);
+//            }
+//
+//            @Override
+//            public void onFinish() {
+//
+//            }
+//        };
+//        videoUpdater.start();
+        mConnectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+
         if (mMediaPlayer != null) {
             mMediaPlayer.release();
             mMediaPlayer = null;
         }
+        timer1.cancel();
+        timer1=null;
+        timer2.cancel();
+        timer2=null;
+        if(timer!=null){
+            timer.cancel();
+            timer = null;
+        }
+        if (scheduler != null && !scheduler.isShutdown()) {
+            scheduler.shutdown();
+            scheduler = null;
+
+        }
+        super.onDestroy();
 
 
     }
@@ -518,20 +588,34 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    // 检查网络
+    private void checkNetwork() {
+        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+        service.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                if (mqttAndroidClient != null) {
+                    if(!mqttAndroidClient.isConnected()) {
+                        reconnectIfNecessary();
+                    }
+                }
+            }
+        }, 1, 1, TimeUnit.SECONDS);
+    }
+
 
     /**
      * 建立连接
      */
     private void initConnection() {
-        if (isConnnect) {
-            return;
-        }
+
         clientId = clientId + System.currentTimeMillis();
 
         mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
             @Override
             public void connectComplete(boolean reconnect, String serverURI) {
+                publishMessage();
 
                 if (reconnect) {
                     Log.e("longke", "Reconnected to : " + serverURI);
@@ -547,7 +631,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void connectionLost(Throwable cause) {
                 Log.e("longke", "The Connection was lost.");
-                // addToHistory("The Connection was lost.");
+                //连接丢失后，一般在这里面进行重连
+                if (isNetworkAvailable()) {
+                    reconnectIfNecessary();
+                }
             }
 
             @Override
@@ -562,37 +649,110 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
+         mqttConnectOptions = new MqttConnectOptions();
+        // 设置超时时间 单位为秒
+        mqttConnectOptions.setConnectionTimeout(10);
+        // 设置会话心跳时间 单位为秒 服务器会每隔1.5*20秒的时间向客户端发送个消息判断客户端是否在线，但这个方法并没有重连的机制
+        mqttConnectOptions.setKeepAliveInterval(20);
         mqttConnectOptions.setAutomaticReconnect(true);
         mqttConnectOptions.setCleanSession(false);
-        try {
-            mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-
-                    DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
-                    disconnectedBufferOptions.setBufferEnabled(true);
-                    disconnectedBufferOptions.setBufferSize(100);
-                    disconnectedBufferOptions.setPersistBuffer(false);
-                    disconnectedBufferOptions.setDeleteOldestMessages(false);
-                    mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
-                    subscribeToTopic();
-                    subscribeToTopic1();
-                    subscribeToTopic2();//shot
-                    subscribeToTopic3();//shot
-                    InitData();//强制刷新
-                    isConnnect = true;
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                }
-            });
-
-        } catch (MqttException ex) {
-            ex.printStackTrace();
+        startReconnect();
+        checkNetwork();
+    }
+    /**
+     * Checkes the current connectivity
+     * and reconnects if it is required.
+     * 重新连接如果他是必须的
+     */
+    public synchronized void reconnectIfNecessary() {
+        if (mqttAndroidClient == null || !mqttAndroidClient.isConnected()) {
+            connect();
         }
     }
+
+    /**
+     * Query's the NetworkInfo via ConnectivityManager
+     * to return the current connected state
+     * 通过ConnectivityManager查询网络连接状态
+     *
+     * @return boolean true if we are connected false otherwise
+     * 如果网络状态正常则返回true反之flase
+     */
+    private boolean isNetworkAvailable() {
+        NetworkInfo info = mConnectivityManager.getActiveNetworkInfo();
+
+        return (info == null) ? false : info.isConnected();
+    }
+
+    private void connect() {
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
+                        @Override
+                        public void onSuccess(IMqttToken asyncActionToken) {
+
+                            DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
+                            disconnectedBufferOptions.setBufferEnabled(true);
+                            disconnectedBufferOptions.setBufferSize(100);
+                            disconnectedBufferOptions.setPersistBuffer(false);
+                            disconnectedBufferOptions.setDeleteOldestMessages(false);
+                            mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
+                            subscribeToTopic();
+                            subscribeToTopic1();
+                            subscribeToTopic2();//shot
+                            subscribeToTopic3();//shot
+                            InitData();//强制刷新
+                            isConnnect = true;
+                        }
+
+                        @Override
+                        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                        }
+                    });
+
+                } catch (MqttException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    /**
+     *  调用init() 方法之后，调用此方法。
+     */
+    public void startReconnect() {
+        scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.scheduleAtFixedRate(new Runnable() {
+
+            @Override
+            public void run() {
+                if (!mqttAndroidClient.isConnected() && isNetworkAvailable()) {
+                    connect();
+                }
+            }
+        }, 0 * 1000, 10 * 1000, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Receiver that listens for connectivity chanes
+     * via ConnectivityManager
+     * 网络状态发生变化接收器
+     */
+    private final BroadcastReceiver mConnectivityReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i("BroadcastReceiver", "Connectivity Changed...");
+            if (!isNetworkAvailable()) {
+                Toast.makeText(context, "网络错误", Toast.LENGTH_SHORT).show();
+                scheduler.shutdownNow();
+            } else {
+                startReconnect();
+            }
+        }
+    };
 
     /**
      * 获取数据
@@ -607,6 +767,11 @@ public class MainActivity extends AppCompatActivity {
                     public void onSuccess(int statusCode, JSONObject response) {
                         Log.d(TAG, "doPost onSuccess JSONObject:" + response);
                         info = new Gson().fromJson(response.toString(), Info.class);
+                        if(info==null){
+                            Toast.makeText(MainActivity.this, info.getMessage(), Toast.LENGTH_SHORT).show();
+                            //finish();
+                            return;
+                        }
                         Info.DataBean data = info.getData();
                         if (data == null) {
                             Toast.makeText(MainActivity.this, info.getMessage(), Toast.LENGTH_SHORT).show();
@@ -625,26 +790,38 @@ public class MainActivity extends AppCompatActivity {
                             mShengyuzidan.setText("0");
                         } else {
                             mShengyuzidan.setText(data.getShootDetailList().get(data.getShootDetailList().size() - 1).getBulletIndex() + "");
-
                         }
                         // mShengyushijian.setText(data.getRemainTime());
                         if (isFrist) {
                             if (!isFromViSitor) {
-                                setVideoUri();
+                                setVideoUri(false);
                             }
 
                             list = data.getShootDetailList();
-                            String temp = SpTools.getStringValue(MainActivity.this, info.getData().getStudentCode(), "");
+                            String temp="";
+                            if (isViSitor.equals("1")) {
+                                temp = SpTools.getStringValue(MainActivity.this, SharedPreferencesUtil.YOU_KE, "");
+                                //SpTools.putStringValue(MainActivity.this, SharedPreferencesUtil.YOU_KE,"");
+                            } else {
+                                temp = SpTools.getStringValue(MainActivity.this, SharedPreferencesUtil.KAO_HEI, "");
+                            }
+
                             if (!TextUtils.isEmpty(temp)) {
                                 Gson gson = new Gson();
-                                tempList = gson.fromJson(temp,
-                                        new TypeToken<List<Info.DataBean.ShootDetailListBean>>() {
-                                        }.getType());
-                                shotPoint.setTempShootDetailListBean(tempList);
+                                Data data1 = gson.fromJson(temp,
+                                        Data.class);
+                                if(info.getData().getStudentCode().equals(data1.getStudentCode())){
+                                    tempList=data1.getList();
+                                    shotPoint.setTempShootDetailListBean(tempList,false);
+                                }else{
+                                    tempList = new ArrayList<Info.DataBean.ShootDetailListBean>();
+                                    shotPoint.setTempShootDetailListBean(tempList,false);
+                                }
+
 
                             } else {
                                 tempList = new ArrayList<Info.DataBean.ShootDetailListBean>();
-                                shotPoint.setTempShootDetailListBean(tempList);
+                                shotPoint.setTempShootDetailListBean(tempList,false);
                             }
                             if (list != null) {
                                 shotPoint.setShootDetailListBean(list);
@@ -705,7 +882,10 @@ public class MainActivity extends AppCompatActivity {
                             String MqttServerIP = object.getString("MqttServerIP");
                             String MqttPort = object.getString("MqttPort");
                             serverUri = "tcp://" + MqttServerIP + ":" + MqttPort;
-                            initConnection();
+                            if (mqttAndroidClient == null || !mqttAndroidClient.isConnected()) {
+                                initConnection();
+                            }
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -806,19 +986,32 @@ public class MainActivity extends AppCompatActivity {
                         mZongchengji.setText(data.getTotalScore() + "");
                         // mShengyushijian.setText(data.getRemainTime());
                         if (isNull) {
-                            setVideoUri();
+                            setVideoUri(false);
                         }
-                        String temp = SpTools.getStringValue(MainActivity.this, info.getData().getStudentCode(), "");
+                        String temp="";
+                        if (isViSitor.equals("1")) {
+                            temp = SpTools.getStringValue(MainActivity.this, SharedPreferencesUtil.YOU_KE, "");
+                            //SpTools.putStringValue(MainActivity.this, SharedPreferencesUtil.YOU_KE,"");
+                        } else {
+                            temp = SpTools.getStringValue(MainActivity.this, SharedPreferencesUtil.KAO_HEI, "");
+                        }
+
                         if (!TextUtils.isEmpty(temp)) {
                             Gson gson = new Gson();
-                            tempList = gson.fromJson(temp,
-                                    new TypeToken<List<Info.DataBean.ShootDetailListBean>>() {
-                                    }.getType());
-                            shotPoint.setTempShootDetailListBean(tempList);
+                            Data data1 = gson.fromJson(temp,
+                                    Data.class);
+                            if(info.getData().getStudentCode().equals(data1.getStudentCode())){
+                                tempList=data1.getList();
+                                shotPoint.setTempShootDetailListBean(tempList,false);
+                            }else{
+                                tempList = new ArrayList<Info.DataBean.ShootDetailListBean>();
+                                shotPoint.setTempShootDetailListBean(tempList,false);
+                            }
 
-                        } else {
+
+                        }  else {
                             tempList.clear();
-                            shotPoint.setTempShootDetailListBean(tempList);
+                            shotPoint.setTempShootDetailListBean(tempList,false);
                         }
 
                         list = data.getShootDetailList();
@@ -937,6 +1130,7 @@ public class MainActivity extends AppCompatActivity {
      * 切换模式
      */
     private void ChangeMode(final boolean isNotify) {
+        setVideoUri(false);
         mMyOkhttp.get().url(Urls.BASE_URL + Urls.ChangeMode)
                 .addParam("padCode", sn)
                 .addParam("type", isViSitor)
@@ -949,8 +1143,14 @@ public class MainActivity extends AppCompatActivity {
                             if (response.getBoolean("Success")) {
                                 if (isNotify) {
                                     isFrist = true;
-                                    mKaishiTitle.setText("开始");
-                                    mShotBtn.setText("射击");
+                                    if(isViSitor.equals("1")) {
+                                        mKaishiTitle.setText("开始");
+                                        mShotBtn.setText("射击");
+                                    }
+                                    else {
+                                        mKaishiTitle.setText("准备");
+                                        mShotBtn.setText("就绪");
+                                    }
                                     mReadyLayout.setBackgroundResource(R.mipmap.btn01);
                                     ;
                                     mReadyLayout.setClickable(true);
@@ -1117,18 +1317,21 @@ public class MainActivity extends AppCompatActivity {
                     // 收到指令
                     Log.e("longke", "Message: " + topic + " : " + new String(message.getPayload()));
                     JSONObject object = new JSONObject(new String(message.getPayload()));
-                    if (object.has("Type")) {
+                    if (object.has("Type") && object.has("RangeId")) {
                         String type = object.getString("Type");
-                        if ("Ready".equals(type)) {
-                            handler.sendEmptyMessage(1);
+                        String RangeId = object.getString("RangeId");
+                        if (RangeId.equals(info.getData().getRangeId() + ""))
+                        {
+                            if ("Ready".equals(type)) {
+                                handler.sendEmptyMessage(1);
 
-                        } else if ("Start".equals(type)) {
-                            handler.sendEmptyMessage(2);
+                            } else if ("Start".equals(type)) {
+                                handler.sendEmptyMessage(2);
 
-                        } else if ("Shoot".equals(type)) {
+                            } else if ("Shoot".equals(type)) {
 
+                            }
                         }
-
                     }
                     System.out.println("Message: " + topic + " : " + new String(message.getPayload()));
                 }
@@ -1195,9 +1398,17 @@ public class MainActivity extends AppCompatActivity {
                                     bean.setHeight(object.getInt("Height"));
                                     bean.setScore(object.getInt("Score"));
                                     tempList.add(bean);
+                                    Data dataj=new Data();
+                                    dataj.setList(tempList);
+                                    dataj.setStudentCode(info.getData().getStudentCode());
                                     Gson gson = new Gson();
-                                    String a = gson.toJson(tempList);
-                                    SpTools.putStringValue(MainActivity.this, info.getData().getStudentCode(), a);
+                                    String a = gson.toJson(dataj);
+                                    if (isViSitor.equals("1")) {
+                                        SpTools.putStringValue(MainActivity.this, SharedPreferencesUtil.YOU_KE, a);
+                                    } else {
+                                        SpTools.putStringValue(MainActivity.this, SharedPreferencesUtil.KAO_HEI, a);
+                                    }
+
                                     Message msg = handler.obtainMessage();
                                     Bundle b = new Bundle();
                                     b.putInt("ID", -1);
@@ -1283,13 +1494,16 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     JSONObject object = new JSONObject(new String(message.getPayload()));
-                    if (object.has("Type")) {
+                    if (object.has("Type") && object.has("RangeId")) {
                         String type = object.getString("Type");
-                        if ("Off".equals(type)) {
-                             handler.sendEmptyMessage(7);
+                        int RangeId = object.getInt("RangeId");
+                        if (RangeId == info.getData().getRangeId()) {
+                            if ("Off".equals(type)) {
+                                handler.sendEmptyMessage(7);
+                            } else if ("Restart".equals(type)) {
+                                handler.sendEmptyMessage(10);
+                            }
                         }
-
-
                     }
 
                     System.out.println("Message: " + topic + " : " + new String(message.getPayload()));
@@ -1326,35 +1540,33 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     JSONObject object = new JSONObject(new String(message.getPayload()));
-                    if (object.has("Type")) {
+                    if (object.has("Type") && object.has("TargetId")) {
                         String type = object.getString("Type");
-                        if ("End".equals(type)) {
-                            String TargetId = object.getString("TargetId");
-                            if (info != null && info.getData() != null) {
-                                if (TargetId.equals(info.getData().getTargetId() + "")) {
-
+                        String TargetId = object.getString("TargetId");
+                        if (TargetId.equals(info.getData().getTargetId() + "")) {
+                            if ("End".equals(type)) {
+                                if (info != null && info.getData() != null) {
                                     handler.sendEmptyMessageDelayed(4, 500);
                                 }
-                            }
-                        } else if ("Ready".equals(type)) {
-                            if (object.has("IsGuest")) {
-                                int IsGuest = object.getInt("IsGuest");
-                                if (IsGuest == 1) {
-                                    handler.sendEmptyMessage(6);
+                            } else if ("Ready".equals(type)) {
+                                if (object.has("IsGuest")) {
+                                    int IsGuest = object.getInt("IsGuest");
+                                    if (IsGuest == 1) {
+                                        handler.sendEmptyMessage(6);
 
+                                    }
                                 }
-                            }
-                        } else if ("Start".equals(type)) {
-                            if (object.has("IsGuest")) {
-                                int IsGuest = object.getInt("IsGuest");
-                                if (IsGuest == 1) {
-                                    GetTrainStudentDataByGroupId();
-                                    //info.getData().setStatus(3);
+                            } else if ("Start".equals(type)) {
+                                if (object.has("IsGuest")) {
+                                    int IsGuest = object.getInt("IsGuest");
+                                    if (IsGuest == 1) {
+                                        GetTrainStudentDataByGroupId();
+                                        //info.getData().setStatus(3);
 
+                                    }
                                 }
                             }
                         }
-
 
                     }
 
@@ -1428,11 +1640,10 @@ public class MainActivity extends AppCompatActivity {
 
             message.setPayload(gson.toJson(heartbeat).getBytes());
             if (mqttAndroidClient == null) {
-                initConnection();
+
                 return;
             }
             if (!mqttAndroidClient.isConnected()) {
-                initConnection();
                 return;
             }
             mqttAndroidClient.publish("Heartbeat", message);
@@ -1459,15 +1670,22 @@ public class MainActivity extends AppCompatActivity {
 
         IjkMediaPlayer.loadLibrariesOnce(null);
         IjkMediaPlayer.native_profileBegin("libijkplayer.so");
-        setVideoUri();
+        setVideoUri(true);
 
     }
 
-    private void setVideoUri() {
+    private void setVideoUri(boolean update) {
         if (info != null && info.getData() != null) {
-            mVideoView.setVideoURI(Uri.parse(info.getData().getVideoStreamUrl()));
-            mVideoView.setAspectRatio(IRenderView.AR_16_9_FIT_PARENT);
-            mVideoView.start();
+            if (update)
+            {
+                mVideoView.setVideoURI(Uri.parse(info.getData().getVideoStreamUrl()));
+                mVideoView.setAspectRatio(IRenderView.AR_16_9_FIT_PARENT);
+                mVideoView.start();
+            }
+            else {
+                mVideoView.setVideoURIWithoutUpdate(Uri.parse(info.getData().getVideoStreamUrl()));
+                mVideoView.start();
+            }
 
         }
 
@@ -1496,13 +1714,13 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         if (info != null && info.getData() != null) {
                             startShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
-                            setVideoUri();
+                            setVideoUri(false);
                         }
                     }
                 } else {
                     if (info != null && info.getData() != null) {
                         startShot(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
-                        setVideoUri();
+                        setVideoUri(false);
                     }
                 }
 
@@ -1526,7 +1744,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.qiehuan:
 
-
                 if (popupWindow == null) {
                     contentView = LayoutInflater.from(this).inflate(R.layout.pop_menu, null);
                     popupWindow = new PopupWindow(contentView, 300, 200, true);
@@ -1537,8 +1754,8 @@ public class MainActivity extends AppCompatActivity {
                     ziYou.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            ziYou.setTextColor(Color.parseColor("#ffffff"));
-                            kaoHe.setTextColor(Color.parseColor("#838396"));
+                            ziYou.setTextColor(Color.parseColor("#838396"));
+                            kaoHe.setTextColor(Color.parseColor("#ffffff"));
                             SharedPreferencesUtil.put(MainActivity.this, SharedPreferencesUtil.IS_VISITOR, "1");
                             isViSitor = (String) SharedPreferencesUtil.get(MainActivity.this, IS_VISITOR, "2");
                             mTitleTv.setText("自由模式");
@@ -1566,7 +1783,7 @@ public class MainActivity extends AppCompatActivity {
                             isViSitor = (String) SharedPreferencesUtil.get(MainActivity.this, IS_VISITOR, "2");
                             mTitleTv.setText("考核模式");
                             if (isViSitor.equals("1")) {
-                                mKaishiTitle.setText("开始");
+                                mKaishiTitle.setText("准备");
                                 mShotBtn.setText("射击");
                                 mReadyLayout.setBackgroundResource(R.mipmap.btn01);
                                 mReadyLayout.setClickable(true);
@@ -1598,11 +1815,11 @@ public class MainActivity extends AppCompatActivity {
                 TextView ziYou = (TextView) contentView.findViewById(R.id.ziyou);
                 TextView kaoHe = (TextView) contentView.findViewById(R.id.kaohe);
                 if (isViSitor.equals("1")) {
-                    ziYou.setTextColor(Color.parseColor("#ffffff"));
-                    kaoHe.setTextColor(Color.parseColor("#838396"));
-                } else {
-                    kaoHe.setTextColor(Color.parseColor("#ffffff"));
                     ziYou.setTextColor(Color.parseColor("#838396"));
+                    kaoHe.setTextColor(Color.parseColor("#ffffff"));
+                } else {
+                    kaoHe.setTextColor(Color.parseColor("#838396"));
+                    ziYou.setTextColor(Color.parseColor("#ffffff"));
                 }
                 popupWindow.showAsDropDown(mQiehuan, 0, 20);
 
@@ -1618,14 +1835,19 @@ public class MainActivity extends AppCompatActivity {
             isShowRedOpen = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.IS_RED, true);
             isViSitor = (String) SharedPreferencesUtil.get(MainActivity.this, IS_VISITOR, "2");
             IS_RADIO = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.IS_RADIO, true);
+            SHOW_OPTION = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.SHOW_OPTION, true);
+            shotPoint.setShowOrder(SHOW_OPTION);
             isFromViSitor = true;
             Urls.BASE_URL = (String) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.BASE_URL, "");
+
             shotPoint.setShowRed(isShowRedOpen);
             if (isViSitor.equals("1")) {
                 mKaishiTitle.setText("开始");
                 mShotBtn.setText("射击");
                 mReadyLayout.setBackgroundResource(R.mipmap.btn01);
                 mReadyLayout.setClickable(true);
+                mEndLayout.setBackgroundResource(R.drawable.gray_shape);
+                mEndLayout.setClickable(false);
                 mTitleTv.setText("自由模式");
                 ChangeMode(true);
             } else {
@@ -1633,9 +1855,18 @@ public class MainActivity extends AppCompatActivity {
                 mTitleTv.setText("考核模式");
                 mReadyLayout.setBackgroundResource(R.drawable.gray_shape);
                 mReadyLayout.setClickable(false);
+                mEndLayout.setBackgroundResource(R.drawable.gray_shape);
+                mEndLayout.setClickable(false);
                 ChangeMode(true);
             }
 
         }
+    }
+
+    public void restartApp() {
+        final Intent intent = this.getApplication().getPackageManager()
+                .getLaunchIntentForPackage(this.getApplication().getPackageName());
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        this.getApplication().startActivity(intent);
     }
 }

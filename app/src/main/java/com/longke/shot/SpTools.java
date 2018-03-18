@@ -134,7 +134,7 @@ public class SpTools {
     public static void putStringValue(Context context, String key, String value) {
         SharedPreferences.Editor sp = context.getSharedPreferences(SETTING, Context.MODE_PRIVATE).edit();
         sp.putString(key, value);
-        sp.commit();
+        sp.apply();
     }
 
     /**

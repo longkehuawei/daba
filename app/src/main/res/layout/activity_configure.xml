@@ -25,6 +25,13 @@
             android:textColor="@color/title_text_color"
             android:textSize="35.0sp" />
 
+        <TextView
+            android:id="@+id/version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/color888888"
+            android:textSize="12sp" />
+
     </RelativeLayout>
 
     <View
@@ -78,13 +85,48 @@
                 android:layout_width="wrap_content"
                 android:text="是否显示数字"
                 android:checked="true"
-                android:layout_margin="26dp"
+                android:layout_marginLeft="26dp"
+                android:layout_marginTop="26dp"
+                android:layout_marginBottom="13dp"
                 android:textSize="28.0sp"
                 android:layout_height="wrap_content" />
+
+            <RadioGroup
+                android:id="@+id/show_group"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="100dp"
+                android:checkedButton="@+id/show_order"
+                android:orientation="horizontal"
+                android:layout_marginBottom="26dp">
+
+                <RadioButton
+                    android:id="@+id/show_order"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:checked="true"
+                    android:text="显示顺序"
+                    android:textSize="28.0sp" />
+
+                <RadioButton
+                    android:id="@+id/show_score"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.3"
+                    android:checked="false"
+                    android:text="显示环数"
+                    android:textSize="28.0sp" />
+
+            </RadioGroup>
+
             <View
-                android:layout_width="fill_parent"
+                android:id="@+id/view"
+                android:layout_width="match_parent"
                 android:layout_height="0.5dip"
+                android:layout_weight="1"
                 android:background="#cccccc" />
+
             <CheckBox
                 android:id="@+id/isRadio"
                 android:layout_width="wrap_content"
@@ -93,9 +135,11 @@
                 android:layout_margin="26dp"
                 android:textSize="28.0sp"
                 android:layout_height="wrap_content" />
+
             <View
                 android:layout_width="fill_parent"
                 android:layout_height="0.5dip"
+                android:layout_weight="1"
                 android:background="#cccccc" />
             <CheckBox
                 android:id="@+id/isVisitor"
@@ -106,22 +150,45 @@
                 android:textSize="28.0sp"
                 android:layout_height="wrap_content" />
 
-
-
-            <Button
-                android:id="@+id/bt_queding"
-                android:layout_width="fill_parent"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10.0dip"
-                android:layout_marginRight="10.0dip"
-                android:layout_marginTop="20.0dip"
-                android:background="@drawable/round_btn_orange_self_selector"
-                android:text="确定"
-                android:padding="20dp"
-                android:textColor="@android:color/white"
-                android:textSize="28.0sp"
-                android:textStyle="bold"
-                android:visibility="visible" />
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/bt_queding"
+                    android:layout_width="450dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="10.0dip"
+                    android:layout_marginRight="10.0dip"
+                    android:layout_marginTop="20.0dip"
+                    android:background="@drawable/round_btn_orange_self_selector"
+                    android:padding="20dp"
+                    android:text="确定"
+                    android:textColor="@android:color/white"
+                    android:textSize="28.0sp"
+                    android:textStyle="bold"
+                    android:visibility="visible" />
+
+                <Button
+                    android:id="@+id/bt_quxiao"
+                    android:layout_width="450dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10.0dip"
+                    android:layout_marginRight="10.0dip"
+                    android:layout_marginTop="20.0dip"
+                    android:background="@drawable/round_btn_orange_self_selector"
+                    android:padding="20dp"
+                    android:text="取消"
+                    android:textColor="@android:color/white"
+                    android:textSize="28.0sp"
+                    android:textStyle="bold"
+                    android:visibility="visible" />
+
+            </LinearLayout>
+
         </LinearLayout>
+
     </ScrollView>
 </LinearLayout>
