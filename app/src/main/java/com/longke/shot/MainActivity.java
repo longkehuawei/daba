@@ -4,6 +4,7 @@ package com.longke.shot;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.AssetFileDescriptor;
@@ -34,7 +35,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.longke.shot.entity.Data;
 import com.longke.shot.entity.Heartbeat;
 import com.longke.shot.entity.Info;
@@ -76,10 +76,8 @@ import butterknife.OnClick;
 import okhttp3.OkHttpClient;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
-import static android.R.attr.data;
-import static android.app.Activity.RESULT_OK;
+import static android.R.id.message;
 import static com.longke.shot.SharedPreferencesUtil.IS_VISITOR;
-import static com.longke.shot.SharedPreferencesUtil.SHOW_OPTION;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -227,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
 
                     break;
                 case 3:
-                    getData();
+                    GetTrainStudentDataByGroupId();
                     //startHeCheng("环");
 
                     if (list != null) {
@@ -285,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
                     mEndLayout.setBackgroundResource(R.mipmap.btn02);
                     mEndLayout.setClickable(true);
                     timer.start();
-                    getData();
+                    GetTrainStudentDataByGroupId();
                     break;
                 case 7:
                     mActivityMain.setBackgroundResource(R.mipmap.jieshu);
@@ -317,6 +315,10 @@ public class MainActivity extends AppCompatActivity {
 
         sn = UUIDS.getUUID();
         Urls.BASE_URL = (String) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.BASE_URL, "");
+        mConnectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        if (!isNetworkAvailable()) {
+            publishMessageDialog("网络未连接，请检查网络");
+        }
         if (TextUtils.isEmpty(Urls.BASE_URL)) {
             startActivity(new Intent(MainActivity.this, ConfigureActivity.class).putExtra("isFromMain", true));
             finish();
@@ -453,9 +455,10 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        };
 //        videoUpdater.start();
-        mConnectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+
         registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
+
 
 
     @Override
@@ -746,7 +749,7 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             Log.i("BroadcastReceiver", "Connectivity Changed...");
             if (!isNetworkAvailable()) {
-                Toast.makeText(context, "网络错误", Toast.LENGTH_SHORT).show();
+                publishMessageDialog("网络未连接，请检查网络");
                 scheduler.shutdownNow();
             } else {
                 startReconnect();
@@ -1154,7 +1157,7 @@ public class MainActivity extends AppCompatActivity {
                                     mReadyLayout.setBackgroundResource(R.mipmap.btn01);
                                     ;
                                     mReadyLayout.setClickable(true);
-                                    getData();
+                                    GetTrainStudentDataByGroupId();
                                     GetConfigData();
                                 }
 

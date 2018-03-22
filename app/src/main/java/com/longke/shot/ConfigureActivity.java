@@ -93,7 +93,7 @@ public class ConfigureActivity extends AppCompatActivity {
             btQuxiao.setVisibility(View.GONE);
         }
 
-        version.setText("v0.0.2");
+        version.setText("v0.0.3");
     }
 
     @OnClick(R.id.bt_queding)
