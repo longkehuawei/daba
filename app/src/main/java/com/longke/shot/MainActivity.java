@@ -38,6 +38,7 @@ import com.google.gson.Gson;
 import com.longke.shot.entity.Data;
 import com.longke.shot.entity.Heartbeat;
 import com.longke.shot.entity.Info;
+import com.longke.shot.event.PublishEvent;
 import com.longke.shot.media.IRenderView;
 import com.longke.shot.media.IjkVideoView;
 import com.longke.shot.view.DialogUtil;
@@ -55,6 +56,9 @@ import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -77,6 +81,7 @@ import okhttp3.OkHttpClient;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
 import static android.R.id.message;
+import static com.longke.shot.R.mipmap.set;
 import static com.longke.shot.SharedPreferencesUtil.IS_VISITOR;
 
 
@@ -225,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
 
                     break;
                 case 3:
-                    GetTrainStudentDataByGroupId();
+                    //GetTrainStudentDataByGroupId();
                     //startHeCheng("环");
 
                     if (list != null) {
@@ -316,9 +321,9 @@ public class MainActivity extends AppCompatActivity {
         sn = UUIDS.getUUID();
         Urls.BASE_URL = (String) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.BASE_URL, "");
         mConnectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        if (!isNetworkAvailable()) {
+        /*if (!isNetworkAvailable()) {
             publishMessageDialog("网络未连接，请检查网络");
-        }
+        }*/
         if (TextUtils.isEmpty(Urls.BASE_URL)) {
             startActivity(new Intent(MainActivity.this, ConfigureActivity.class).putExtra("isFromMain", true));
             finish();
@@ -342,6 +347,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             mTitleTv.setText("考核模式");
         }
+        EventBus.getDefault().register(this);
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
 
@@ -457,6 +463,7 @@ public class MainActivity extends AppCompatActivity {
 //        videoUpdater.start();
 
         registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+
     }
 
 
@@ -468,6 +475,8 @@ public class MainActivity extends AppCompatActivity {
             mMediaPlayer.release();
             mMediaPlayer = null;
         }
+        EventBus.getDefault().unregister(this);
+        unregisterReceiver(mConnectivityReceiver);
         timer1.cancel();
         timer1=null;
         timer2.cancel();
@@ -750,7 +759,10 @@ public class MainActivity extends AppCompatActivity {
             Log.i("BroadcastReceiver", "Connectivity Changed...");
             if (!isNetworkAvailable()) {
                 publishMessageDialog("网络未连接，请检查网络");
-                scheduler.shutdownNow();
+                if(scheduler!=null){
+                    scheduler.shutdownNow();
+                }
+
             } else {
                 startReconnect();
             }
@@ -866,7 +878,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(int statusCode, String error_msg) {
                         Log.d(TAG, "doPost onFailure:" + error_msg);
-                        // ToastUtil.showShort(BaseApplication.context,error_msg);
+                        Toast.makeText(MainActivity.this,"请检查网络，及服务器配置",Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -946,7 +958,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(int statusCode, String error_msg) {
                         Log.d(TAG, "doPost onFailure:" + error_msg);
-                        // ToastUtil.showShort(BaseApplication.context,error_msg);
+                        Toast.makeText(MainActivity.this,"请检查网络，及服务器配置",Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -1056,6 +1068,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(int statusCode, String error_msg) {
                         Log.d(TAG, "doPost onFailure:" + error_msg);
+                        Toast.makeText(MainActivity.this,"请检查网络，及服务器配置",Toast.LENGTH_SHORT).show();
                         // ToastUtil.showShort(BaseApplication.context,error_msg);
                     }
                 });
@@ -1178,6 +1191,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(int statusCode, String error_msg) {
                         Log.d(TAG, "doPost onFailure:" + error_msg);
+                        Toast.makeText(MainActivity.this,"请检查网络，及服务器配置",Toast.LENGTH_SHORT).show();
                         // ToastUtil.showShort(BaseApplication.context,error_msg);
                     }
                 });
@@ -1676,6 +1690,10 @@ public class MainActivity extends AppCompatActivity {
         setVideoUri(true);
 
     }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMoonEvent(PublishEvent messageEvent) {
+        setVideoUri(true);
+    }
 
     private void setVideoUri(boolean update) {
         if (info != null && info.getData() != null) {
@@ -1836,6 +1854,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             isShowRedOpen = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.IS_RED, true);
+            String tempVistor=isViSitor;
             isViSitor = (String) SharedPreferencesUtil.get(MainActivity.this, IS_VISITOR, "2");
             IS_RADIO = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.IS_RADIO, true);
             SHOW_OPTION = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.SHOW_OPTION, true);
@@ -1852,7 +1871,25 @@ public class MainActivity extends AppCompatActivity {
                 mEndLayout.setBackgroundResource(R.drawable.gray_shape);
                 mEndLayout.setClickable(false);
                 mTitleTv.setText("自由模式");
-                ChangeMode(true);
+                if(!tempVistor.equals(isViSitor)){
+                    ChangeMode(true);
+                }else{
+                    isFrist = true;
+                    if(isViSitor.equals("1")) {
+                        mKaishiTitle.setText("开始");
+                        mShotBtn.setText("射击");
+                    }
+                    else {
+                        mKaishiTitle.setText("准备");
+                        mShotBtn.setText("就绪");
+                    }
+                    mReadyLayout.setBackgroundResource(R.mipmap.btn01);
+                    ;
+                    mReadyLayout.setClickable(true);
+                    GetTrainStudentDataByGroupId();
+                    GetConfigData();
+                }
+
             } else {
                 mRemainingTime.setVisibility(View.VISIBLE);
                 mTitleTv.setText("考核模式");
@@ -1860,7 +1897,24 @@ public class MainActivity extends AppCompatActivity {
                 mReadyLayout.setClickable(false);
                 mEndLayout.setBackgroundResource(R.drawable.gray_shape);
                 mEndLayout.setClickable(false);
-                ChangeMode(true);
+                if(!tempVistor.equals(isViSitor)){
+                    ChangeMode(true);
+                }else{
+                    isFrist = true;
+                    if(isViSitor.equals("1")) {
+                        mKaishiTitle.setText("开始");
+                        mShotBtn.setText("射击");
+                    }
+                    else {
+                        mKaishiTitle.setText("准备");
+                        mShotBtn.setText("就绪");
+                    }
+                    mReadyLayout.setBackgroundResource(R.mipmap.btn01);
+                    ;
+                    mReadyLayout.setClickable(true);
+                    GetTrainStudentDataByGroupId();
+                    GetConfigData();
+                }
             }
 
         }

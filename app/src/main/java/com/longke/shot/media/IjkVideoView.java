@@ -18,12 +18,12 @@ package com.longke.shot.media;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -34,6 +34,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.MediaController;
+
+import com.longke.shot.event.PublishEvent;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -116,6 +120,26 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
     private boolean enableSurfaceView = true;
     private boolean enableTextureView = false;
     private boolean enableNoView = false;
+    private int TIME = 10000;
+
+ /*   Handler handler = new Handler();
+    Runnable runnable = new Runnable() {
+
+        @Override
+        public void run() {
+            // handler自带方法实现定时器
+            try {
+                handler.postDelayed(this, TIME);
+                openVideo();
+                requestLayout();
+                invalidate();
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                System.out.println("exception...");
+            }
+        }
+    };*/
 
     public IjkVideoView(Context context) {
         super(context);
@@ -378,45 +402,25 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
             // target state that was there before.
             mCurrentState = STATE_PREPARING;
             attachMediaController();
-            timer1.cancel();
+
         } catch (IOException ex) {
             Log.w(TAG, "Unable to open content: " + mUri, ex);
             mCurrentState = STATE_ERROR;
             mTargetState = STATE_ERROR;
             //openVideo();
-            timer1.schedule(new TimerTask() {
 
-                @Override
-                public void run() {
-                    openVideo();
-                    requestLayout();
-                    invalidate();
-
-                }
-            }, 15000, 15000);
             mErrorListener.onError(mMediaPlayer, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
             return;
         } catch (IllegalArgumentException ex) {
             Log.w(TAG, "Unable to open content: " + mUri, ex);
             mCurrentState = STATE_ERROR;
             mTargetState = STATE_ERROR;
-            timer1.schedule(new TimerTask() {
-
-                @Override
-                public void run() {
-                    openVideo();
-                    requestLayout();
-                    invalidate();
-
-                }
-            }, 15000, 15000);
             mErrorListener.onError(mMediaPlayer, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
             return;
         } finally {
             // REMOVED: mPendingSubtitleTracks.clear();
         }
     }
-    Timer timer1 = new Timer();
 
     public void setMediaController(IMediaController controller) {
         if (mMediaController != null) {
@@ -519,6 +523,7 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
                     if (mOnCompletionListener != null) {
                         mOnCompletionListener.onCompletion(mMediaPlayer);
                     }
+
                 }
             };
 
@@ -569,6 +574,7 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
                         if (framework_err == MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK) {
                             message = "Invalid progressive playback";
                         }
+                        EventBus.getDefault().post(new PublishEvent());
 
                       /*  new android.app.AlertDialog.Builder(getContext())
                                 .setMessage(message)
