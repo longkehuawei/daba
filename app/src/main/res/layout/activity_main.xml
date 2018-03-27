@@ -45,6 +45,11 @@
                     android:layout_alignParentRight="true"
                     android:layout_height="wrap_content">
                     <ImageView
+                        android:id="@+id/chengji"
+                        android:layout_width="50dp"
+                        android:src="@mipmap/chenji"
+                        android:layout_height="50dp"/>
+                    <ImageView
                         android:id="@+id/qiehuan"
                         android:layout_width="50dp"
                         android:src="@mipmap/arrow04"

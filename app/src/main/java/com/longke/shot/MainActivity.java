@@ -4,7 +4,6 @@ package com.longke.shot;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.AssetFileDescriptor;
@@ -29,15 +28,18 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.longke.shot.adapter.ScoreAdapter;
 import com.longke.shot.entity.Data;
 import com.longke.shot.entity.Heartbeat;
 import com.longke.shot.entity.Info;
+import com.longke.shot.entity.ItemBean;
 import com.longke.shot.event.PublishEvent;
 import com.longke.shot.media.IRenderView;
 import com.longke.shot.media.IjkVideoView;
@@ -80,8 +82,6 @@ import butterknife.OnClick;
 import okhttp3.OkHttpClient;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
-import static android.R.id.message;
-import static com.longke.shot.R.mipmap.set;
 import static com.longke.shot.SharedPreferencesUtil.IS_VISITOR;
 
 
@@ -129,6 +129,8 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout mRemainingTime;
     @InjectView(R.id.qiehuan)
     ImageView mQiehuan;
+    @InjectView(R.id.chengji)
+    ImageView mChengJi;
     @InjectView(R.id.title_tv)
     TextView mTitleTv;
     @InjectView(R.id.TargetName_tv)
@@ -303,6 +305,7 @@ public class MainActivity extends AppCompatActivity {
 
     Timer timer1 = new Timer();
     Timer timer2 = new Timer();
+    private PopupWindow popRankWindow;
     private PopupWindow popupWindow;
     private View contentView;
     private ConnectivityManager mConnectivityManager;
@@ -1097,6 +1100,22 @@ public class MainActivity extends AppCompatActivity {
         });
         ShowLoginDialog.show();
     }
+    private void  scoreDialog() {
+        View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_score_layout, null);
+        ListView listView = (ListView) findViewById(R.id.listView);
+        List<ItemBean> itemBeanList=new ArrayList<>();
+        listView.setAdapter(new ScoreAdapter(this, itemBeanList));
+        ImageView deleteIv = (ImageView) view.findViewById(R.id.delete_iv);
+        final Dialog ShowLoginDialog = DialogUtil.dialog(this, view);
+        deleteIv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                ShowLoginDialog.dismiss();
+            }
+        });
+        ShowLoginDialog.show();
+    }
 
     /**
      * 开始射击
@@ -1721,7 +1740,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @OnClick({R.id.ready_layout, R.id.end_layout, R.id.sheshouxinxi, R.id.qiehuan})
+    @OnClick({R.id.ready_layout, R.id.end_layout, R.id.sheshouxinxi, R.id.qiehuan,R.id.chengji})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ready_layout:
@@ -1845,6 +1864,44 @@ public class MainActivity extends AppCompatActivity {
                 popupWindow.showAsDropDown(mQiehuan, 0, 20);
 
 
+                break;
+            case R.id.chengji:
+                if (popRankWindow == null) {
+                    contentView = LayoutInflater.from(this).inflate(R.layout.pop_rank_menu, null);
+                    popRankWindow = new PopupWindow(contentView, 300, 200, true);
+                    popRankWindow.setOutsideTouchable(true);
+                    popRankWindow.setFocusable(false);
+                    final TextView scoreTv = (TextView) contentView.findViewById(R.id.score_tv);
+                    final TextView rankTv = (TextView) contentView.findViewById(R.id.rank_tv);
+                    scoreTv.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            scoreDialog();
+                            popRankWindow.dismiss();
+                        }
+                    });
+                    rankTv.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            startActivity(new Intent(MainActivity.this,RankActivity.class));
+                            popRankWindow.dismiss();
+                        }
+                    });
+
+                    popRankWindow.setOutsideTouchable(true);
+                    popRankWindow.setFocusable(false);
+                    contentView.setOnTouchListener(new View.OnTouchListener() {
+                        @Override
+                        public boolean onTouch(View v, MotionEvent event) {
+                            if (popRankWindow != null && popRankWindow.isShowing()) {
+                                popRankWindow.dismiss();
+                            }
+                            return false;
+                        }
+                    });
+                }
+
+                popupWindow.showAsDropDown(mChengJi, 0, 20);
                 break;
         }
     }
