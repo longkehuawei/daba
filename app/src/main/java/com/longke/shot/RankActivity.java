@@ -32,6 +32,10 @@ public class RankActivity extends AppCompatActivity {
         setContentView(R.layout.activity_rank);
         ButterKnife.inject(this);
         itemBeanList=new ArrayList<>();
+        for(int i=0;i<5;i++){
+            ItemBean itemBean=new ItemBean();
+            itemBeanList.add(itemBean);
+        }
         listView.setAdapter(new RankAdapter(this, itemBeanList));
     }
 

@@ -5,15 +5,18 @@
     android:layout_height="match_parent">
         <RelativeLayout
             android:layout_width="match_parent"
-            android:paddingLeft="10dp"
-            android:paddingBottom="8dp"
-            android:paddingTop="8dp"
-             android:paddingRight="10dp"
+            android:paddingLeft="15dp"
+            android:layout_marginTop="7dp"
+            android:paddingBottom="12dp"
+            android:paddingTop="12dp"
+            android:background="#f8f8f8"
+             android:paddingRight="15dp"
             android:layout_height="wrap_content">
             <TextView
                 android:layout_width="wrap_content"
                 android:text="个人成绩"
-                android:textSize="18sp"
+                android:textSize="20sp"
+                android:textColor="@color/title_text_color"
                 android:layout_height="wrap_content" />
             <ImageView
                 android:id="@+id/delete_iv"
@@ -28,16 +31,23 @@
             android:layout_height="wrap_content">
             <TextView
                 android:layout_width="wrap_content"
-                android:text="张三 | 二班 | 10组 | 总25发 | 总52环 | 15小时"
+                android:textSize="18sp"
+                android:padding="10dp"
+                android:textColor="@color/title_text_color"
+                android:text="张三  |  二班  |  10组  |  总25发  |  总52环  | 15小时"
                 android:layout_height="wrap_content" />
 
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
+            android:background="#020C88"
+            android:padding="8dp"
             android:layout_height="wrap_content">
             <TextView
                 android:layout_width="wrap_content"
                 android:text="第几发"
+                android:textColor="@color/colorFFFFFF"
+                android:textSize="16sp"
                 android:gravity="center_horizontal"
                 android:layout_weight="1"
                 android:layout_height="wrap_content" />
@@ -45,17 +55,23 @@
                 android:layout_width="wrap_content"
                 android:text="环数"
                 android:layout_weight="1"
+                android:textColor="@color/colorFFFFFF"
+                android:textSize="16sp"
                 android:gravity="center_horizontal"
                 android:layout_height="wrap_content" />
             <TextView
                 android:layout_width="wrap_content"
                 android:text="时间"
                 android:layout_weight="1"
+                android:textColor="@color/colorFFFFFF"
+                android:textSize="16sp"
                 android:gravity="center_horizontal"
                 android:layout_height="wrap_content" />
         </LinearLayout>
         <ListView
             android:id="@+id/listView"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
+            android:divider="#e7e7e8"
+            android:dividerHeight="0.7dp"
             android:layout_height="wrap_content"></ListView>
 </LinearLayout>

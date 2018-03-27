@@ -1102,8 +1102,12 @@ public class MainActivity extends AppCompatActivity {
     }
     private void  scoreDialog() {
         View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_score_layout, null);
-        ListView listView = (ListView) findViewById(R.id.listView);
+        ListView listView = (ListView) view.findViewById(R.id.listView);
         List<ItemBean> itemBeanList=new ArrayList<>();
+        for(int i=0;i<5;i++){
+            ItemBean itemBean=new ItemBean();
+            itemBeanList.add(itemBean);
+        }
         listView.setAdapter(new ScoreAdapter(this, itemBeanList));
         ImageView deleteIv = (ImageView) view.findViewById(R.id.delete_iv);
         final Dialog ShowLoginDialog = DialogUtil.dialog(this, view);
@@ -1868,7 +1872,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.chengji:
                 if (popRankWindow == null) {
                     contentView = LayoutInflater.from(this).inflate(R.layout.pop_rank_menu, null);
-                    popRankWindow = new PopupWindow(contentView, 300, 200, true);
+                    popRankWindow = new PopupWindow(contentView, 500, 160, true);
                     popRankWindow.setOutsideTouchable(true);
                     popRankWindow.setFocusable(false);
                     final TextView scoreTv = (TextView) contentView.findViewById(R.id.score_tv);
@@ -1901,7 +1905,7 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
 
-                popupWindow.showAsDropDown(mChengJi, 0, 20);
+                popRankWindow.showAsDropDown(mChengJi, 0, 20);
                 break;
         }
     }
