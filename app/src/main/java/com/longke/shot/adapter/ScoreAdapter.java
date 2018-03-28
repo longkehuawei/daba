@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.longke.shot.R;
@@ -19,11 +18,11 @@ import java.util.List;
  */
 
 public class ScoreAdapter extends BaseAdapter {
-    private List<ItemBean> mList;
+    private List<ItemBean.DataEntity.ShootDetailListEntity> mList;
     private LayoutInflater mInflater;
 
     // 通过构造器关联数据源与数据适配器
-    public ScoreAdapter(Context context, List<ItemBean> list){
+    public ScoreAdapter(Context context, List<ItemBean.DataEntity.ShootDetailListEntity> list){
         mList = list;
         // 使用当前要使用的界面对象context去初始化布局装载器对象mInflater
         mInflater = LayoutInflater.from(context);
@@ -63,26 +62,26 @@ public class ScoreAdapter extends BaseAdapter {
             // 将控件id保存在viewHolder中
             viewHolder = new ViewHolder();
             convertView = mInflater.inflate(R.layout.score_item, null);
-           /* viewHolder.imageView = (ImageView) convertView.findViewById(R.id.iv_img);
-            viewHolder.title = (TextView) convertView.findViewById(R.id.tv_title);
-            viewHolder.content = (TextView) convertView.findViewById(R.id.tv_content);*/
+            viewHolder.index_tv = (TextView) convertView.findViewById(R.id.index_tv);
+            viewHolder.score_tv = (TextView) convertView.findViewById(R.id.score_tv);
+            viewHolder.time_tv = (TextView) convertView.findViewById(R.id.time_tv);
             // 通过setTag将ViewHolder与convertView绑定
             convertView.setTag(viewHolder);
         } else{
             // 通过ViewHolder对象找到对应控件
             viewHolder = (ViewHolder) convertView.getTag();
-           /* ItemBean bean = mList.get(position);
-            viewHolder.imageView.setImageResource(bean.getItemImageResid());
-            viewHolder.title.setText(bean.getItemContent());
-            viewHolder.content.setText(bean.getItemContent());*/
+            ItemBean.DataEntity.ShootDetailListEntity bean = mList.get(position);
+            viewHolder.index_tv.setText(bean.getBulletHoleIndex());
+            viewHolder.score_tv.setText(bean.getCurrShootNum());
+            viewHolder.time_tv.setText(bean.getShootTime());
         }
         return convertView;
     }
 
     // 避免重复的findViewById的操作
     class ViewHolder{
-        public ImageView imageView;
-        public TextView title;
-        public TextView content;
+        public TextView time_tv;
+        public TextView index_tv;
+        public TextView score_tv;
     }
 }

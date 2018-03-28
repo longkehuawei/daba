@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.longke.shot.R;
+import com.longke.shot.entity.GetStudentRankingDetail;
 import com.longke.shot.entity.ItemBean;
 
 import java.util.List;
@@ -19,11 +20,11 @@ import java.util.List;
  */
 
 public class RankAdapter extends BaseAdapter {
-    private List<ItemBean> mList;
+    private List<GetStudentRankingDetail.DataEntity.RankingListEntity> mList;
     private LayoutInflater mInflater;
 
     // 通过构造器关联数据源与数据适配器
-    public RankAdapter(Context context, List<ItemBean> list){
+    public RankAdapter(Context context, List<GetStudentRankingDetail.DataEntity.RankingListEntity> list){
         mList = list;
         // 使用当前要使用的界面对象context去初始化布局装载器对象mInflater
         mInflater = LayoutInflater.from(context);
@@ -63,26 +64,29 @@ public class RankAdapter extends BaseAdapter {
             // 将控件id保存在viewHolder中
             viewHolder = new ViewHolder();
             convertView = mInflater.inflate(R.layout.rank_item, null);
-           /* viewHolder.imageView = (ImageView) convertView.findViewById(R.id.iv_img);
-            viewHolder.title = (TextView) convertView.findViewById(R.id.tv_title);
-            viewHolder.content = (TextView) convertView.findViewById(R.id.tv_content);*/
+            viewHolder.paiming_tv = (TextView) convertView.findViewById(R.id.paiming_tv);
+            viewHolder.xingming_tv = (TextView) convertView.findViewById(R.id.xingming_tv);
+            viewHolder.huanshu_tv = (TextView) convertView.findViewById(R.id.huanshu_tv);
+            viewHolder.shijian_tv = (TextView) convertView.findViewById(R.id.shijian_tv);
             // 通过setTag将ViewHolder与convertView绑定
             convertView.setTag(viewHolder);
         } else{
             // 通过ViewHolder对象找到对应控件
             viewHolder = (ViewHolder) convertView.getTag();
-           /* ItemBean bean = mList.get(position);
-            viewHolder.imageView.setImageResource(bean.getItemImageResid());
-            viewHolder.title.setText(bean.getItemContent());
-            viewHolder.content.setText(bean.getItemContent());*/
+            GetStudentRankingDetail.DataEntity.RankingListEntity bean = mList.get(position);
+            viewHolder.paiming_tv.setText(bean.getRankingIndex());
+            viewHolder.xingming_tv.setText(bean.getStudentName());
+            viewHolder.huanshu_tv.setText(bean.getScore());
+            viewHolder.shijian_tv.setText(bean.getUseTime());
         }
         return convertView;
     }
 
     // 避免重复的findViewById的操作
     class ViewHolder{
-        public ImageView imageView;
-        public TextView title;
-        public TextView content;
+        public TextView paiming_tv;
+        public TextView xingming_tv;
+        public TextView huanshu_tv;
+        public TextView shijian_tv;
     }
 }

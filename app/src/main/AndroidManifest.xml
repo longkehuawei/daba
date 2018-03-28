@@ -75,7 +75,9 @@
         <activity
             android:name=".ConfigureActivity"
             android:screenOrientation="landscape" />
-        <activity android:name=".RankActivity"></activity>
+        <activity android:name=".RankActivity"
+            android:screenOrientation="landscape"
+            ></activity>
     </application>
 
 </manifest>

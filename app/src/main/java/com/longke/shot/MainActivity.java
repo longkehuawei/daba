@@ -37,6 +37,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.longke.shot.adapter.ScoreAdapter;
 import com.longke.shot.entity.Data;
+import com.longke.shot.entity.GetStudentRankingDetail;
 import com.longke.shot.entity.Heartbeat;
 import com.longke.shot.entity.Info;
 import com.longke.shot.entity.ItemBean;
@@ -191,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
     MqttConnectOptions mqttConnectOptions;
     private boolean isConnnect;
     private boolean isShowOrder;
+    List<ItemBean.DataEntity.ShootDetailListEntity> mList;
 
     String sn;
     int i = 0;
@@ -479,7 +481,6 @@ public class MainActivity extends AppCompatActivity {
             mMediaPlayer = null;
         }
         EventBus.getDefault().unregister(this);
-        unregisterReceiver(mConnectivityReceiver);
         timer1.cancel();
         timer1=null;
         timer2.cancel();
@@ -1076,6 +1077,46 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
+    /**
+     * 成绩详情
+     */
+    private void GetStudentScoreDetail( String trainId, String studentId) {
+        mMyOkhttp.get().url(Urls.BASE_URL + Urls.GetStudentScoreDetail)
+                .addParam("trainId", trainId + "")
+                .addParam("studentId", studentId + "")
+                .tag(this)
+                .enqueue(new JsonResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, JSONObject response) {
+
+                        ItemBean  info = new Gson().fromJson(response.toString(), ItemBean.class);
+                        ItemBean.DataEntity data = info.getData();
+
+                        if (data!= null) {
+                            mList= data.getShootDetailList();
+                            if(mList==null){
+                                mList=new ArrayList<ItemBean.DataEntity.ShootDetailListEntity>();
+                            }
+                        } else{
+                            mList=new ArrayList<ItemBean.DataEntity.ShootDetailListEntity>();
+                        }
+                        scoreDialog();
+                    }
+
+                    @Override
+                    public void onSuccess(int statusCode, JSONArray response) {
+                        Log.d(TAG, "doPost onSuccess JSONArray:" + response);
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, String error_msg) {
+                        Log.d(TAG, "doPost onFailure:" + error_msg);
+                        Toast.makeText(MainActivity.this,"请检查网络，及服务器配置",Toast.LENGTH_SHORT).show();
+                        // ToastUtil.showShort(BaseApplication.context,error_msg);
+                    }
+                });
+    }
+
 
     private void publishMessageDialog(String message) {
         View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_not_login, null);
@@ -1103,12 +1144,10 @@ public class MainActivity extends AppCompatActivity {
     private void  scoreDialog() {
         View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_score_layout, null);
         ListView listView = (ListView) view.findViewById(R.id.listView);
-        List<ItemBean> itemBeanList=new ArrayList<>();
-        for(int i=0;i<5;i++){
-            ItemBean itemBean=new ItemBean();
-            itemBeanList.add(itemBean);
+        if(mList==null){
+           mList=new ArrayList<>();
         }
-        listView.setAdapter(new ScoreAdapter(this, itemBeanList));
+        listView.setAdapter(new ScoreAdapter(this, mList));
         ImageView deleteIv = (ImageView) view.findViewById(R.id.delete_iv);
         final Dialog ShowLoginDialog = DialogUtil.dialog(this, view);
         deleteIv.setOnClickListener(new View.OnClickListener() {
@@ -1880,14 +1919,31 @@ public class MainActivity extends AppCompatActivity {
                     scoreTv.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            scoreDialog();
+
+                            if (info != null && info.getData() != null) {
+                                if(info.getData().getStatus()==4){
+                                    GetStudentScoreDetail(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
+                                }else{
+                                    Toast.makeText(MainActivity.this,"亲，考试还没结束",Toast.LENGTH_SHORT).show();
+                                }
+
+                            }
+
                             popRankWindow.dismiss();
                         }
                     });
                     rankTv.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            startActivity(new Intent(MainActivity.this,RankActivity.class));
+                            if (info != null && info.getData() != null) {
+                                if(info.getData().getStatus()==4){
+                                    startActivity(new Intent(MainActivity.this,RankActivity.class).putExtra("TrainId",info.getData().getTrainId() + "").putExtra("studentId",info.getData().getStudentId() + ""));
+                                }else{
+                                    Toast.makeText(MainActivity.this,"亲，考试还没结束",Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+
                             popRankWindow.dismiss();
                         }
                     });
@@ -1921,8 +1977,12 @@ public class MainActivity extends AppCompatActivity {
             SHOW_OPTION = (boolean) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.SHOW_OPTION, true);
             shotPoint.setShowOrder(SHOW_OPTION);
             isFromViSitor = true;
+            String baseUrl=  Urls.BASE_URL;
             Urls.BASE_URL = (String) SharedPreferencesUtil.get(MainActivity.this, SharedPreferencesUtil.BASE_URL, "");
-
+            if(!baseUrl.equals(Urls.BASE_URL)){
+                restartApp();
+                return;
+            }
             shotPoint.setShowRed(isShowRedOpen);
             if (isViSitor.equals("1")) {
                 mKaishiTitle.setText("开始");
