@@ -37,7 +37,6 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.longke.shot.adapter.ScoreAdapter;
 import com.longke.shot.entity.Data;
-import com.longke.shot.entity.GetStudentRankingDetail;
 import com.longke.shot.entity.Heartbeat;
 import com.longke.shot.entity.Info;
 import com.longke.shot.entity.ItemBean;
@@ -83,6 +82,7 @@ import butterknife.OnClick;
 import okhttp3.OkHttpClient;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
+import static com.longke.shot.R.id.view;
 import static com.longke.shot.SharedPreferencesUtil.IS_VISITOR;
 
 
@@ -1094,13 +1094,14 @@ public class MainActivity extends AppCompatActivity {
 
                         if (data!= null) {
                             mList= data.getShootDetailList();
+
                             if(mList==null){
                                 mList=new ArrayList<ItemBean.DataEntity.ShootDetailListEntity>();
                             }
                         } else{
                             mList=new ArrayList<ItemBean.DataEntity.ShootDetailListEntity>();
                         }
-                        scoreDialog();
+                        scoreDialog(data.getStudentData());
                     }
 
                     @Override
@@ -1141,9 +1142,14 @@ public class MainActivity extends AppCompatActivity {
         });
         ShowLoginDialog.show();
     }
-    private void  scoreDialog() {
+    private void  scoreDialog(ItemBean.DataEntity.StudentDataEntity entity) {
+        if(entity==null){
+            return;
+        }
         View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_score_layout, null);
         ListView listView = (ListView) view.findViewById(R.id.listView);
+        TextView desc_tv= (TextView) view.findViewById(R.id.desc_tv);
+        desc_tv.setText(entity.getStudentName() +" | "+entity.getClassName()+" | "+entity.getGroupIndex()+"组 | 总"+entity.getTotalBulletCount()+"发 | 总"+entity.getTotalScore()+"环 | "+entity.getUseTime());
         if(mList==null){
            mList=new ArrayList<>();
         }
