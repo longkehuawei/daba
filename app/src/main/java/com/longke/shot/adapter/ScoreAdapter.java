@@ -18,14 +18,18 @@ import java.util.List;
  */
 
 public class ScoreAdapter extends BaseAdapter {
-    private List<ItemBean.DataEntity.ShootDetailListEntity> mList;
+    private List<ItemBean.DataBean.ShootDetailListBean> mList;
     private LayoutInflater mInflater;
 
     // 通过构造器关联数据源与数据适配器
-    public ScoreAdapter(Context context, List<ItemBean.DataEntity.ShootDetailListEntity> list){
+    public ScoreAdapter(Context context, List<ItemBean.DataBean.ShootDetailListBean> list){
         mList = list;
         // 使用当前要使用的界面对象context去初始化布局装载器对象mInflater
         mInflater = LayoutInflater.from(context);
+    }
+    public  void setData(List<ItemBean.DataBean.ShootDetailListBean> list){
+        mList = list;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -70,11 +74,12 @@ public class ScoreAdapter extends BaseAdapter {
         } else{
             // 通过ViewHolder对象找到对应控件
             viewHolder = (ViewHolder) convertView.getTag();
-            ItemBean.DataEntity.ShootDetailListEntity bean = mList.get(position);
-            viewHolder.index_tv.setText(bean.getBulletHoleIndex());
-            viewHolder.score_tv.setText(bean.getCurrShootNum());
-            viewHolder.time_tv.setText(bean.getShootTime());
+
         }
+        ItemBean.DataBean.ShootDetailListBean bean = mList.get(position);
+        viewHolder.index_tv.setText(""+bean.getBulletHoleIndex());
+        viewHolder.score_tv.setText(""+bean.getCurrShootNum()+"");
+        viewHolder.time_tv.setText(bean.getShootTime());
         return convertView;
     }
 

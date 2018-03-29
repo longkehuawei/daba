@@ -74,5 +74,5 @@
             android:layout_width="match_parent"
             android:divider="#e7e7e8"
             android:dividerHeight="0.7dp"
-            android:layout_height="wrap_content"></ListView>
+            android:layout_height="350dp"></ListView>
 </LinearLayout>

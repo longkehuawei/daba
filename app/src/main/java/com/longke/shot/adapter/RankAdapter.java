@@ -73,12 +73,13 @@ public class RankAdapter extends BaseAdapter {
         } else{
             // 通过ViewHolder对象找到对应控件
             viewHolder = (ViewHolder) convertView.getTag();
-            GetStudentRankingDetail.DataEntity.RankingListEntity bean = mList.get(position);
-            viewHolder.paiming_tv.setText(bean.getRankingIndex());
-            viewHolder.xingming_tv.setText(bean.getStudentName());
-            viewHolder.huanshu_tv.setText(bean.getScore());
-            viewHolder.shijian_tv.setText(bean.getUseTime());
+
         }
+        GetStudentRankingDetail.DataEntity.RankingListEntity bean = mList.get(position);
+        viewHolder.paiming_tv.setText(""+bean.getRankingIndex()+"");
+        viewHolder.xingming_tv.setText(""+bean.getStudentName()+"");
+        viewHolder.huanshu_tv.setText(""+bean.getScore()+"");
+        viewHolder.shijian_tv.setText(bean.getUseTime());
         return convertView;
     }
 

@@ -9,14 +9,15 @@ import java.util.List;
 
 public class ItemBean {
 
+
     /**
      * FormateStr : yyyy-MM-dd
      * ResultCode : 200
      * Success : true
      * Message :
-     * Data : {"StudentData":{"StudentName":"测试22","ClassName":"一班","GroupIndex":2,"TotalBulletCount":4,"TotalScore":21,"UseTime":"112秒"},"ShootDetailList":[{"BulletHoleIndex":1,"CurrShootNum":9,"ShootTime":"2018-03-13 20:35:53"},{"BulletHoleIndex":2,"CurrShootNum":6,"ShootTime":"2018-03-13 20:35:56"},{"BulletHoleIndex":3,"CurrShootNum":0,"ShootTime":"2018-03-13 20:36:37"},{"BulletHoleIndex":4,"CurrShootNum":6,"ShootTime":"2018-03-13 20:36:38"}]}
+     * Data : {"StudentData":{"StudentName":"测试67","ClassName":"一班","GroupIndex":7,"TotalBulletCount":15,"TotalScore":70,"UseTime":"16秒"},"ShootDetailList":[{"BulletHoleIndex":1,"CurrShootNum":5,"ShootTime":"2018-03-29 23:54:58"},{"BulletHoleIndex":2,"CurrShootNum":5,"ShootTime":"2018-03-29 23:54:58"},{"BulletHoleIndex":3,"CurrShootNum":8,"ShootTime":"2018-03-29 23:54:58"},{"BulletHoleIndex":4,"CurrShootNum":6,"ShootTime":"2018-03-29 23:54:59"},{"BulletHoleIndex":5,"CurrShootNum":0,"ShootTime":"2018-03-29 23:54:59"},{"BulletHoleIndex":6,"CurrShootNum":8,"ShootTime":"2018-03-29 23:54:59"},{"BulletHoleIndex":7,"CurrShootNum":7,"ShootTime":"2018-03-29 23:54:59"},{"BulletHoleIndex":8,"CurrShootNum":3,"ShootTime":"2018-03-29 23:54:59"},{"BulletHoleIndex":9,"CurrShootNum":1,"ShootTime":"2018-03-29 23:54:59"},{"BulletHoleIndex":10,"CurrShootNum":4,"ShootTime":"2018-03-29 23:55:00"},{"BulletHoleIndex":11,"CurrShootNum":0,"ShootTime":"2018-03-29 23:55:00"},{"BulletHoleIndex":12,"CurrShootNum":5,"ShootTime":"2018-03-29 23:55:00"},{"BulletHoleIndex":13,"CurrShootNum":9,"ShootTime":"2018-03-29 23:55:01"},{"BulletHoleIndex":14,"CurrShootNum":3,"ShootTime":"2018-03-29 23:55:01"},{"BulletHoleIndex":15,"CurrShootNum":6,"ShootTime":"2018-03-29 23:55:01"}]}
      * TotalCount : 0
-     * SessionId : qrix5gdetitzya2qyapj50ne
+     * SessionId : rudy2p1xaydxicc2o0mamrwr
      * ContentEncoding : null
      * ContentType : null
      * JsonRequestBehavior : 0
@@ -28,7 +29,7 @@ public class ItemBean {
     private int ResultCode;
     private boolean Success;
     private String Message;
-    private DataEntity Data;
+    private DataBean Data;
     private int TotalCount;
     private String SessionId;
     private Object ContentEncoding;
@@ -69,11 +70,11 @@ public class ItemBean {
         this.Message = Message;
     }
 
-    public DataEntity getData() {
+    public DataBean getData() {
         return Data;
     }
 
-    public void setData(DataEntity Data) {
+    public void setData(DataBean Data) {
         this.Data = Data;
     }
 
@@ -133,39 +134,39 @@ public class ItemBean {
         this.RecursionLimit = RecursionLimit;
     }
 
-    public static class DataEntity {
+    public static class DataBean {
         /**
-         * StudentData : {"StudentName":"测试22","ClassName":"一班","GroupIndex":2,"TotalBulletCount":4,"TotalScore":21,"UseTime":"112秒"}
-         * ShootDetailList : [{"BulletHoleIndex":1,"CurrShootNum":9,"ShootTime":"2018-03-13 20:35:53"},{"BulletHoleIndex":2,"CurrShootNum":6,"ShootTime":"2018-03-13 20:35:56"},{"BulletHoleIndex":3,"CurrShootNum":0,"ShootTime":"2018-03-13 20:36:37"},{"BulletHoleIndex":4,"CurrShootNum":6,"ShootTime":"2018-03-13 20:36:38"}]
+         * StudentData : {"StudentName":"测试67","ClassName":"一班","GroupIndex":7,"TotalBulletCount":15,"TotalScore":70,"UseTime":"16秒"}
+         * ShootDetailList : [{"BulletHoleIndex":1,"CurrShootNum":5,"ShootTime":"2018-03-29 23:54:58"},{"BulletHoleIndex":2,"CurrShootNum":5,"ShootTime":"2018-03-29 23:54:58"},{"BulletHoleIndex":3,"CurrShootNum":8,"ShootTime":"2018-03-29 23:54:58"},{"BulletHoleIndex":4,"CurrShootNum":6,"ShootTime":"2018-03-29 23:54:59"},{"BulletHoleIndex":5,"CurrShootNum":0,"ShootTime":"2018-03-29 23:54:59"},{"BulletHoleIndex":6,"CurrShootNum":8,"ShootTime":"2018-03-29 23:54:59"},{"BulletHoleIndex":7,"CurrShootNum":7,"ShootTime":"2018-03-29 23:54:59"},{"BulletHoleIndex":8,"CurrShootNum":3,"ShootTime":"2018-03-29 23:54:59"},{"BulletHoleIndex":9,"CurrShootNum":1,"ShootTime":"2018-03-29 23:54:59"},{"BulletHoleIndex":10,"CurrShootNum":4,"ShootTime":"2018-03-29 23:55:00"},{"BulletHoleIndex":11,"CurrShootNum":0,"ShootTime":"2018-03-29 23:55:00"},{"BulletHoleIndex":12,"CurrShootNum":5,"ShootTime":"2018-03-29 23:55:00"},{"BulletHoleIndex":13,"CurrShootNum":9,"ShootTime":"2018-03-29 23:55:01"},{"BulletHoleIndex":14,"CurrShootNum":3,"ShootTime":"2018-03-29 23:55:01"},{"BulletHoleIndex":15,"CurrShootNum":6,"ShootTime":"2018-03-29 23:55:01"}]
          */
 
-        private StudentDataEntity StudentData;
-        private List<ShootDetailListEntity> ShootDetailList;
+        private StudentDataBean StudentData;
+        private List<ShootDetailListBean> ShootDetailList;
 
-        public StudentDataEntity getStudentData() {
+        public StudentDataBean getStudentData() {
             return StudentData;
         }
 
-        public void setStudentData(StudentDataEntity StudentData) {
+        public void setStudentData(StudentDataBean StudentData) {
             this.StudentData = StudentData;
         }
 
-        public List<ShootDetailListEntity> getShootDetailList() {
+        public List<ShootDetailListBean> getShootDetailList() {
             return ShootDetailList;
         }
 
-        public void setShootDetailList(List<ShootDetailListEntity> ShootDetailList) {
+        public void setShootDetailList(List<ShootDetailListBean> ShootDetailList) {
             this.ShootDetailList = ShootDetailList;
         }
 
-        public static class StudentDataEntity {
+        public static class StudentDataBean {
             /**
-             * StudentName : 测试22
+             * StudentName : 测试67
              * ClassName : 一班
-             * GroupIndex : 2
-             * TotalBulletCount : 4
-             * TotalScore : 21
-             * UseTime : 112秒
+             * GroupIndex : 7
+             * TotalBulletCount : 15
+             * TotalScore : 70
+             * UseTime : 16秒
              */
 
             private String StudentName;
@@ -224,11 +225,11 @@ public class ItemBean {
             }
         }
 
-        public static class ShootDetailListEntity {
+        public static class ShootDetailListBean {
             /**
              * BulletHoleIndex : 1
-             * CurrShootNum : 9
-             * ShootTime : 2018-03-13 20:35:53
+             * CurrShootNum : 5
+             * ShootTime : 2018-03-29 23:54:58
              */
 
             private int BulletHoleIndex;

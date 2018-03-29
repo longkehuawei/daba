@@ -82,6 +82,7 @@ import butterknife.OnClick;
 import okhttp3.OkHttpClient;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
+import static android.R.attr.data;
 import static com.longke.shot.R.id.view;
 import static com.longke.shot.SharedPreferencesUtil.IS_VISITOR;
 
@@ -192,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
     MqttConnectOptions mqttConnectOptions;
     private boolean isConnnect;
     private boolean isShowOrder;
-    List<ItemBean.DataEntity.ShootDetailListEntity> mList;
+
 
     String sn;
     int i = 0;
@@ -279,6 +280,10 @@ public class MainActivity extends AppCompatActivity {
                         mEndLayout.setClickable(false);
                     }
                     GetTrainStudentDataByGroupId();
+
+                    GetStudentScoreDetail(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
+
+
 
                     break;
                 case 5://强制刷新
@@ -1090,18 +1095,18 @@ public class MainActivity extends AppCompatActivity {
                     public void onSuccess(int statusCode, JSONObject response) {
 
                         ItemBean  info = new Gson().fromJson(response.toString(), ItemBean.class);
-                        ItemBean.DataEntity data = info.getData();
-
+                        ItemBean.DataBean data = info.getData();
+                        List<ItemBean.DataBean.ShootDetailListBean> mList;
                         if (data!= null) {
                             mList= data.getShootDetailList();
 
                             if(mList==null){
-                                mList=new ArrayList<ItemBean.DataEntity.ShootDetailListEntity>();
+                                mList=new ArrayList<ItemBean.DataBean.ShootDetailListBean>();
                             }
                         } else{
-                            mList=new ArrayList<ItemBean.DataEntity.ShootDetailListEntity>();
+                            mList=new ArrayList<ItemBean.DataBean.ShootDetailListBean>();
                         }
-                        scoreDialog(data.getStudentData());
+                        scoreDialog(data.getStudentData(),mList);
                     }
 
                     @Override
@@ -1142,7 +1147,7 @@ public class MainActivity extends AppCompatActivity {
         });
         ShowLoginDialog.show();
     }
-    private void  scoreDialog(ItemBean.DataEntity.StudentDataEntity entity) {
+    private void  scoreDialog(ItemBean.DataBean.StudentDataBean entity,List<ItemBean.DataBean.ShootDetailListBean> mList) {
         if(entity==null){
             return;
         }
@@ -1150,10 +1155,10 @@ public class MainActivity extends AppCompatActivity {
         ListView listView = (ListView) view.findViewById(R.id.listView);
         TextView desc_tv= (TextView) view.findViewById(R.id.desc_tv);
         desc_tv.setText(entity.getStudentName() +" | "+entity.getClassName()+" | "+entity.getGroupIndex()+"组 | 总"+entity.getTotalBulletCount()+"发 | 总"+entity.getTotalScore()+"环 | "+entity.getUseTime());
-        if(mList==null){
-           mList=new ArrayList<>();
-        }
-        listView.setAdapter(new ScoreAdapter(this, mList));
+
+        ScoreAdapter adapter=new ScoreAdapter(this, mList);
+        listView.setAdapter(adapter);
+
         ImageView deleteIv = (ImageView) view.findViewById(R.id.delete_iv);
         final Dialog ShowLoginDialog = DialogUtil.dialog(this, view);
         deleteIv.setOnClickListener(new View.OnClickListener() {
