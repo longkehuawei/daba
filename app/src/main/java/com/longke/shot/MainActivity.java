@@ -193,6 +193,7 @@ public class MainActivity extends AppCompatActivity {
     MqttConnectOptions mqttConnectOptions;
     private boolean isConnnect;
     private boolean isShowOrder;
+    Dialog scoreDialog;
 
 
     String sn;
@@ -288,6 +289,11 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case 5://强制刷新
                     GetTrainStudentDataByGroupId();
+                    if(scoreDialog!=null){
+                        if(scoreDialog.isShowing()){
+                            scoreDialog.dismiss();
+                        }
+                    }
                     break;
                 case 6:
                     mKaishiTitle.setText("重新");
@@ -1160,15 +1166,15 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(adapter);
 
         ImageView deleteIv = (ImageView) view.findViewById(R.id.delete_iv);
-        final Dialog ShowLoginDialog = DialogUtil.dialog(this, view);
+        scoreDialog = DialogUtil.dialog(this, view);
         deleteIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                ShowLoginDialog.dismiss();
+                scoreDialog.dismiss();
             }
         });
-        ShowLoginDialog.show();
+        scoreDialog.show();
     }
 
     /**
