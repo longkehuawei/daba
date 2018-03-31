@@ -279,10 +279,16 @@ public class MainActivity extends AppCompatActivity {
                         mReadyLayout.setClickable(false);
                         mEndLayout.setBackgroundResource(R.drawable.gray_shape);
                         mEndLayout.setClickable(false);
+                        try {
+                            GetStudentScoreDetail(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
+                        }catch (Exception e){
+
+                        }
+
                     }
                     GetTrainStudentDataByGroupId();
 
-                    GetStudentScoreDetail(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
+
 
 
 
@@ -1112,7 +1118,10 @@ public class MainActivity extends AppCompatActivity {
                         } else{
                             mList=new ArrayList<ItemBean.DataBean.ShootDetailListBean>();
                         }
-                        scoreDialog(data.getStudentData(),mList);
+                        if(data!=null){
+                            scoreDialog(data.getStudentData(),mList);
+                        }
+
                     }
 
                     @Override
