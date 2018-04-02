@@ -2,7 +2,6 @@ package com.longke.shot;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -12,9 +11,13 @@ import com.google.gson.Gson;
 import com.longke.shot.adapter.RankAdapter;
 import com.longke.shot.entity.GetStudentRankingDetail;
 import com.longke.shot.entity.ItemBean;
+import com.longke.shot.event.CloseEvent;
 import com.tsy.sdk.myokhttp.MyOkHttp;
 import com.tsy.sdk.myokhttp.response.JsonResponseHandler;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -53,8 +56,16 @@ public class RankActivity extends AppCompatActivity {
         studentId=getIntent().getStringExtra("studentId");
         TrainId=getIntent().getStringExtra("TrainId");
         GetStudentRankingDetail();
+        EventBus.getDefault().register(this);
 
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
     /**
      * 成绩详情
      */
@@ -90,6 +101,10 @@ public class RankActivity extends AppCompatActivity {
                         // ToastUtil.showShort(BaseApplication.context,error_msg);
                     }
                 });
+    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(CloseEvent messageEvent) {
+        finish();
     }
 
     @OnClick(R.id.back_iv)

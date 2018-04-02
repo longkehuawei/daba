@@ -40,6 +40,7 @@ import com.longke.shot.entity.Data;
 import com.longke.shot.entity.Heartbeat;
 import com.longke.shot.entity.Info;
 import com.longke.shot.entity.ItemBean;
+import com.longke.shot.event.CloseEvent;
 import com.longke.shot.event.PublishEvent;
 import com.longke.shot.media.IRenderView;
 import com.longke.shot.media.IjkVideoView;
@@ -82,8 +83,6 @@ import butterknife.OnClick;
 import okhttp3.OkHttpClient;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
-import static android.R.attr.data;
-import static com.longke.shot.R.id.view;
 import static com.longke.shot.SharedPreferencesUtil.IS_VISITOR;
 
 
@@ -300,6 +299,7 @@ public class MainActivity extends AppCompatActivity {
                             scoreDialog.dismiss();
                         }
                     }
+                    EventBus.getDefault().post(new CloseEvent());
                     break;
                 case 6:
                     mKaishiTitle.setText("重新");
