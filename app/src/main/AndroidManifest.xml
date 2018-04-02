@@ -75,9 +75,15 @@
         <activity
             android:name=".ConfigureActivity"
             android:screenOrientation="landscape" />
-        <activity android:name=".RankActivity"
-            android:screenOrientation="landscape"
-            ></activity>
+        <activity
+            android:name=".RankActivity"
+            android:launchMode="singleInstance"
+            android:screenOrientation="landscape"/>
+        <activity android:name=".ScoreActivity"
+                  android:launchMode="singleInstance"
+                  android:screenOrientation="landscape"
+            >
+        </activity>
     </application>
 
 </manifest>

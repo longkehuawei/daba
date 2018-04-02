@@ -192,7 +192,6 @@ public class MainActivity extends AppCompatActivity {
     MqttConnectOptions mqttConnectOptions;
     private boolean isConnnect;
     private boolean isShowOrder;
-    Dialog scoreDialog;
 
 
     String sn;
@@ -278,11 +277,7 @@ public class MainActivity extends AppCompatActivity {
                         mReadyLayout.setClickable(false);
                         mEndLayout.setBackgroundResource(R.drawable.gray_shape);
                         mEndLayout.setClickable(false);
-                        try {
-                            GetStudentScoreDetail(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
-                        }catch (Exception e){
-
-                        }
+                        startActivity(new Intent(MainActivity.this, ScoreActivity.class).putExtra("TrainId", info.getData().getTrainId() + "").putExtra("studentId", info.getData().getStudentId() + ""));
 
                     }
                     GetTrainStudentDataByGroupId();
@@ -294,11 +289,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case 5://强制刷新
                     GetTrainStudentDataByGroupId();
-                    if(scoreDialog!=null){
-                        if(scoreDialog.isShowing()){
-                            scoreDialog.dismiss();
-                        }
-                    }
+
                     EventBus.getDefault().post(new CloseEvent());
                     break;
                 case 6:
@@ -1094,49 +1085,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
-    /**
-     * 成绩详情
-     */
-    private void GetStudentScoreDetail( String trainId, String studentId) {
-        mMyOkhttp.get().url(Urls.BASE_URL + Urls.GetStudentScoreDetail)
-                .addParam("trainId", trainId + "")
-                .addParam("studentId", studentId + "")
-                .tag(this)
-                .enqueue(new JsonResponseHandler() {
-                    @Override
-                    public void onSuccess(int statusCode, JSONObject response) {
 
-                        ItemBean  info = new Gson().fromJson(response.toString(), ItemBean.class);
-                        ItemBean.DataBean data = info.getData();
-                        List<ItemBean.DataBean.ShootDetailListBean> mList;
-                        if (data!= null) {
-                            mList= data.getShootDetailList();
-
-                            if(mList==null){
-                                mList=new ArrayList<ItemBean.DataBean.ShootDetailListBean>();
-                            }
-                        } else{
-                            mList=new ArrayList<ItemBean.DataBean.ShootDetailListBean>();
-                        }
-                        if(data!=null){
-                            scoreDialog(data.getStudentData(),mList);
-                        }
-
-                    }
-
-                    @Override
-                    public void onSuccess(int statusCode, JSONArray response) {
-                        Log.d(TAG, "doPost onSuccess JSONArray:" + response);
-                    }
-
-                    @Override
-                    public void onFailure(int statusCode, String error_msg) {
-                        Log.d(TAG, "doPost onFailure:" + error_msg);
-                        Toast.makeText(MainActivity.this,"请检查网络，及服务器配置",Toast.LENGTH_SHORT).show();
-                        // ToastUtil.showShort(BaseApplication.context,error_msg);
-                    }
-                });
-    }
 
 
     private void publishMessageDialog(String message) {
@@ -1162,29 +1111,7 @@ public class MainActivity extends AppCompatActivity {
         });
         ShowLoginDialog.show();
     }
-    private void  scoreDialog(ItemBean.DataBean.StudentDataBean entity,List<ItemBean.DataBean.ShootDetailListBean> mList) {
-        if(entity==null){
-            return;
-        }
-        View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_score_layout, null);
-        ListView listView = (ListView) view.findViewById(R.id.listView);
-        TextView desc_tv= (TextView) view.findViewById(R.id.desc_tv);
-        desc_tv.setText(entity.getStudentName() +" | "+entity.getClassName()+" | "+entity.getGroupIndex()+"组 | 总"+entity.getTotalBulletCount()+"发 | 总"+entity.getTotalScore()+"环 | "+entity.getUseTime());
 
-        ScoreAdapter adapter=new ScoreAdapter(this, mList);
-        listView.setAdapter(adapter);
-
-        ImageView deleteIv = (ImageView) view.findViewById(R.id.delete_iv);
-        scoreDialog = DialogUtil.dialog(this, view);
-        deleteIv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                scoreDialog.dismiss();
-            }
-        });
-        scoreDialog.show();
-    }
 
     /**
      * 开始射击
@@ -1948,7 +1875,7 @@ public class MainActivity extends AppCompatActivity {
 
                             if (info != null && info.getData() != null) {
                                 if(info.getData().getStatus()==4){
-                                    GetStudentScoreDetail(info.getData().getTrainId() + "", info.getData().getStudentId() + "");
+                                    startActivity(new Intent(MainActivity.this, ScoreActivity.class).putExtra("TrainId", info.getData().getTrainId() + "").putExtra("studentId", info.getData().getStudentId() + ""));
                                 }else{
                                     Toast.makeText(MainActivity.this,"亲，考试还没结束",Toast.LENGTH_SHORT).show();
                                 }

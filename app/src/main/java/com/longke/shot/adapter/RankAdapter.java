@@ -1,16 +1,15 @@
 package com.longke.shot.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.longke.shot.R;
 import com.longke.shot.entity.GetStudentRankingDetail;
-import com.longke.shot.entity.ItemBean;
 
 import java.util.List;
 
@@ -76,6 +75,11 @@ public class RankAdapter extends BaseAdapter {
 
         }
         GetStudentRankingDetail.DataEntity.RankingListEntity bean = mList.get(position);
+        if(position%2==1){
+            convertView.setBackgroundColor(Color.parseColor("#f4f4f4"));
+        }else{
+            convertView.setBackgroundColor(Color.parseColor("#ffffff"));
+        }
         viewHolder.paiming_tv.setText(""+bean.getRankingIndex()+"");
         viewHolder.xingming_tv.setText(""+bean.getStudentName()+"");
         viewHolder.huanshu_tv.setText(""+bean.getScore()+"");

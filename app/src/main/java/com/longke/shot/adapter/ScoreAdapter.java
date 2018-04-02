@@ -1,6 +1,7 @@
 package com.longke.shot.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -75,6 +76,11 @@ public class ScoreAdapter extends BaseAdapter {
             // 通过ViewHolder对象找到对应控件
             viewHolder = (ViewHolder) convertView.getTag();
 
+        }
+        if(position%2==1){
+            convertView.setBackgroundColor(Color.parseColor("#f4f4f4"));
+        }else{
+            convertView.setBackgroundColor(Color.parseColor("#ffffff"));
         }
         ItemBean.DataBean.ShootDetailListBean bean = mList.get(position);
         viewHolder.index_tv.setText(""+bean.getBulletHoleIndex());
