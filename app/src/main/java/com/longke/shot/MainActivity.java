@@ -290,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
                 case 5://强制刷新
                     GetTrainStudentDataByGroupId();
 
-                    EventBus.getDefault().post(new CloseEvent());
+
                     break;
                 case 6:
                     mKaishiTitle.setText("重新");
@@ -305,6 +305,9 @@ public class MainActivity extends AppCompatActivity {
                 case 7:
                     mActivityMain.setBackgroundResource(R.mipmap.jieshu);
                     mRootLayout.setVisibility(View.GONE);
+                    break;
+                case 9:
+                    EventBus.getDefault().post(new CloseEvent());
                     break;
                 case 10:
                     restartApp();
@@ -1641,6 +1644,9 @@ public class MainActivity extends AppCompatActivity {
                         if ("Refresh".equals(type)) {
 
                             TrainId = object.getString("TrainId");
+                            if(!object.getString("GroupIndex").equals(GroupIndex)){
+                                handler.sendEmptyMessage(9);
+                            }
                             GroupIndex = object.getString("GroupIndex");
 
                             handler.sendEmptyMessage(5);
